@@ -85,6 +85,8 @@
     </div>
     <div class="composer">
       <input id="input" placeholder="Paste a wallet address or ask something" onkeydown="if(event.key==='Enter') send()">
+      <button class="ghost" id="mic" onclick="listen()" title="Speak instead of typing (Chrome and Safari)">Speak</button>
+      <button class="ghost" id="voice" onclick="toggleVoice()" title="Read replies aloud">Read aloud: off</button>
       <button class="primary" onclick="send()">Send</button>
     </div>
     <div class="meta" id="meta">no session yet</div>
@@ -148,6 +150,7 @@ async function send() {
       if (t.active_wallet) currentWallet = t.active_wallet;
       renderTools(v, t);
       checkAgainstChain(v);
+      if (v === versions()[versions().length - 1]) speak(t.reply);
     } catch (e) { pending.remove(); add(v, 'sys', 'error: ' + e.message); }
   }));
 }
@@ -176,6 +179,37 @@ function renderTools(v, t) {
     box.appendChild(det);
   }
   box.scrollTop = 1e9;
+}
+// ---------- voice, using the browser's own speech engines, nothing external ----------
+let readAloud = false;
+function toggleVoice() {
+  readAloud = !readAloud;
+  $('voice').textContent = 'Read aloud: ' + (readAloud ? 'on' : 'off');
+  if (!readAloud) window.speechSynthesis.cancel();
+}
+function speak(text) {
+  if (!readAloud || !window.speechSynthesis) return;
+  const clean = text.replace(/[*_`#>]/g, '').replace(/0x[a-fA-F0-9]{40}/g, 'the wallet address').replace(/\b[0-9a-f]{64}\b/g, 'the transaction hash');
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(clean.slice(0, 600));
+  u.rate = 1.05;
+  window.speechSynthesis.speak(u);
+}
+function listen() {
+  const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!Rec) { alert('Speech input is not available in this browser. Chrome or Safari work.'); return; }
+  const rec = new Rec();
+  rec.lang = 'en-IN'; rec.interimResults = false; rec.maxAlternatives = 1;
+  $('mic').textContent = 'Listening...';
+  rec.onresult = e => {
+    let text = e.results[0][0].transcript.trim();
+    // "claim it", "what can I claim" and so on work as spoken; an address is easier to pick by click
+    if (/what can i claim/i.test(text) && currentWallet && !/0x/.test(text)) text = 'What can I claim in wallet ' + currentWallet + '?';
+    $('input').value = text; $('mic').textContent = 'Speak'; send();
+  };
+  rec.onerror = () => { $('mic').textContent = 'Speak'; };
+  rec.onend = () => { $('mic').textContent = 'Speak'; };
+  rec.start();
 }
 function tableFromMarkdown(md) {
   const html = [];

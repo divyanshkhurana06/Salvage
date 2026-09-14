@@ -115,7 +115,7 @@ Or bring everything up with one command (starts the fork if needed, compiles, bu
 scripts/demo.sh
 ```
 
-The UI has three modes: v1, v2, and **side by side**, which sends the same message to both versions and shows the two replies next to each other with every tool call tagged by version. The **Results** button shows the measured before and after table from the latest evaluation runs.
+The UI has three modes: v1, v2, and **side by side**, which sends the same message to both versions and shows the two replies next to each other with every tool call tagged by version. Under every reply a badge reports what the chain actually says for that wallet, so a wrong number is caught on screen. The **Results** button shows the measured before and after table from the latest evaluation runs. **Speak** turns the browser's speech recognition on for one message and **Read aloud** speaks the replies; both use the browser's own engines, nothing external.
 
 Run the evaluation and print the before and after table:
 
