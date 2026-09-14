@@ -1,0 +1,25 @@
+# secrets
+.env
+*.pem
+
+# python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+
+# fork state, logs, run artifacts
+data/fork_state.json
+data/runs/
+logs/
+*.log
+
+# editors and os
+.vscode/
+.idea/
+.DS_Store
+
+# foundry build output
+contracts/out/
+contracts/cache/
