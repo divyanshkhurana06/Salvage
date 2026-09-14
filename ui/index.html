@@ -199,16 +199,26 @@ function listen() {
   const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!Rec) { alert('Speech input is not available in this browser. Chrome or Safari work.'); return; }
   const rec = new Rec();
-  rec.lang = 'en-IN'; rec.interimResults = false; rec.maxAlternatives = 1;
+  rec.lang = 'en-IN'; rec.interimResults = false; rec.continuous = false; rec.maxAlternatives = 1;
   $('mic').textContent = 'Listening...';
+  // browsers deliver partial results as you talk; keep the latest and send exactly once when listening ends
+  let transcript = '', sent = false;
   rec.onresult = e => {
-    let text = e.results[0][0].transcript.trim();
-    // "claim it", "what can I claim" and so on work as spoken; an address is easier to pick by click
-    if (/what can i claim/i.test(text) && currentWallet && !/0x/.test(text)) text = 'What can I claim in wallet ' + currentWallet + '?';
-    $('input').value = text; $('mic').textContent = 'Speak'; send();
+    let latest = '';
+    for (let i = 0; i < e.results.length; i++) latest += e.results[i][0].transcript;
+    transcript = latest.trim();
+    $('input').value = transcript;
   };
   rec.onerror = () => { $('mic').textContent = 'Speak'; };
-  rec.onend = () => { $('mic').textContent = 'Speak'; };
+  rec.onend = () => {
+    $('mic').textContent = 'Speak';
+    if (sent || !transcript) return;
+    sent = true;
+    let text = transcript;
+    // "what can I claim" as spoken fills in the wallet picked by click; nobody can say a 40 character address
+    if (/what can i claim/i.test(text) && currentWallet && !/0x/.test(text)) text = 'What can I claim in wallet ' + currentWallet + '?';
+    $('input').value = text; send();
+  };
   rec.start();
 }
 function tableFromMarkdown(md) {
