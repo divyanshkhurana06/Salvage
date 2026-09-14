@@ -104,10 +104,9 @@ def check_against_chain(body: CheckIn) -> dict:
     if not wallet or not agent.turns:
         return {"available": False}
     last = agent.turns[-1]
-    # only judge replies that report claimable value: a scan happened this turn, or the reply states a
-    # dollar figure that is not a gas estimate. A gas question has nothing to compare against.
-    scanned = any(c["name"] == "scan_wallet" for c in last["tool_calls"])
-    if not scanned and reported_usd(last["reply"]) is None:
+    # only judge turns where the agent scanned the wallet, because those are the replies that report
+    # claimable value. A gas question or a claim confirmation has nothing to compare against.
+    if not any(c["name"] == "scan_wallet" for c in last["tool_calls"]):
         return {"available": False}
     fees = uniswap.scan_fees(wallet)
     drops = airdrops.scan_airdrops(wallet)
