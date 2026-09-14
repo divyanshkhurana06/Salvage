@@ -26,6 +26,13 @@ class Settings:
     prism_project_id: str
     prism_api_key: str
     agent_version: str
+    elevenlabs_api_key: str
+    elevenlabs_agent_id: str
+    public_url: str
+
+    @property
+    def voice_enabled(self) -> bool:
+        return bool(self.elevenlabs_agent_id)
 
     @property
     def prism_enabled(self) -> bool:
@@ -52,6 +59,9 @@ def load_settings() -> Settings:
         prism_project_id=os.getenv("PRISMTRACE_PROJECT_ID", ""),
         prism_api_key=os.getenv("PRISMTRACE_API_KEY", ""),
         agent_version=os.getenv("AGENT_VERSION", "v2").strip().lower(),
+        elevenlabs_api_key=os.getenv("ELEVENLABS_API_KEY", ""),
+        elevenlabs_agent_id=os.getenv("ELEVENLABS_AGENT_ID", ""),
+        public_url=os.getenv("PUBLIC_URL", "").rstrip("/"),
     )
 
 

@@ -16,7 +16,10 @@ from .config import DATA_DIR, ROOT, settings
 from .eval.report import compare
 from .eval.runner import latest_run
 
+from .voice import router as voice_router
+
 app = FastAPI(title="Salvage")
+app.include_router(voice_router)
 SESSIONS: dict[str, Agent] = {}
 BASE_SNAPSHOT: dict[str, str | None] = {"id": None}
 UI_FILE = ROOT / "ui" / "index.html"
@@ -52,7 +55,8 @@ def status() -> dict:
         fork = {"ok": True, "block": chain.block_number}
     except Exception as exc:
         fork = {"ok": False, "error": str(exc)}
-    return {"fork": fork, "model": settings.llm_enabled, "prism": settings.prism_enabled, "prism_project": settings.prism_project_id}
+    return {"fork": fork, "model": settings.llm_enabled, "prism": settings.prism_enabled, "prism_project": settings.prism_project_id,
+            "voice_agent_id": settings.elevenlabs_agent_id}
 
 
 @app.get("/api/wallets")
