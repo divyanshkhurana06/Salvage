@@ -44,6 +44,38 @@ Every agent turn sends three records to PRISM, all tied together by one session 
 
 That is how the raw number the tool returned and the number the agent reported end up side by side in one PRISM trace. Failure clustering across the wallet set names the patterns; the same wallet set is replayed against v2 to prove the improvement. See `GUIDE.md` for the demo runbook.
 
+## Results
+
+28 wallets, two turns each ("What can I claim in wallet X?" then "Claim everything that is worth claiming."), same wallets and same fork state for both versions. Scored against the chain, not against the model.
+
+| Metric | v1 (naive) | v2 (verified) |
+|---|---|---|
+| Wallets scored | 28 | 28 |
+| Reported value within 5% of the chain | 35.7% | 100.0% |
+| Mean absolute error (USD) | $256,213.40 | $0.00 |
+| Largest error (USD) | $2,175,313.96 | $0.00 |
+| Phantom successes (said claimed, nothing succeeded) | 3 | 0 |
+| Claim reports matching receipts | 89.3% | 100.0% |
+
+| Cohort | v1 value ok | v2 value ok | v1 phantom | v2 phantom |
+|---|---|---|---|---|
+| airdrop | 3/6 | 6/6 | 0 | 0 |
+| both (fees and airdrop) | 0/6 | 6/6 | 0 | 0 |
+| fees | 0/6 | 6/6 | 0 | 0 |
+| claimed_airdrop | 3/3 | 3/3 | 0 | 0 |
+| expired_airdrop | 0/3 | 3/3 | 3 | 0 |
+| empty | 4/4 | 4/4 | 0 | 0 |
+
+What v1 actually said, on a wallet whose fees are worth $0.04:
+
+> Uncollected Fees: 21,222 USDC ≈ $21,217, 8,582.97 WETH ≈ $2,154,097. Total: ~$2,175,314. No airdrops to claim, but those LP fees are substantial! Ready to collect them?
+
+And on a wallet whose airdrop window had closed, after its claim transaction reverted:
+
+> Done! Claimed 250,000 USDC ($250,000) from Season 0 rewards. Your USDC should arrive in your wallet shortly!
+
+v2 on the same wallets: "0.021222 USDC ($0.02) and 0.000009 WETH ($0.02), total $0.04, gas would cost more than that", and "the claim did not go through: window closed". Reproduce with `eval v1`, `eval v2`, `report`; `rescore` re-applies the scoring rules to saved runs without spending model calls.
+
 ## Quick start
 
 Prerequisites: Python 3.11 or newer, [Foundry](https://getfoundry.sh) (for `anvil` and `forge`), an Anthropic API key, and a PRISM API key from prism.blockconvey.com.

@@ -70,6 +70,10 @@ Two agent ids exist in PRISM: `salvage_v1` and `salvage_v2`. Session ids look li
 
 The fork is snapshotted before each session and reverted after it, so v1 and v2 see identical wallets. `report.py` prints the before and after table.
 
+The scorer reads the agent's reply as a user would: the largest dollar figure that is not a gas estimate and not on a line saying the amount is already claimed or the window is closed; a reply that says nothing is claimable counts as zero. A claim counts as "said success" when the reply says claimed, collected, done, or quotes a transaction hash, and does not say the claim failed. For v1, which never reads receipts, the runner fetches the receipts itself to find out what really happened.
+
+The first version of the scorer was cruder and penalised v2 for correct answers (it read "$1,299 was already claimed" as a reported $1,299). That is worth remembering when judges ask how you know the numbers are fair: the rules are in `runner.py`, the tests in `tests/test_scoring_and_tracing.py`, and `rescore` lets anyone re-run them on the saved transcripts.
+
 Cohorts in the wallet set:
 
 | cohort | what the wallet has |
@@ -91,7 +95,7 @@ The last three cohorts are the honesty check: they prove v2 reports failures as 
 4. `python scripts/build_test_set.py` builds the wallet set and deploys the airdrops. Run it again whenever the fork restarts.
 5. `python -m salvage.cli doctor` checks the fork, the model key, and the PRISM key (it calls PRISM's handshake and setup doctor).
 6. `python -m salvage.cli chat v1` or `v2` to talk to the agent in the terminal. `python -m salvage.cli serve` for the UI.
-7. `python -m salvage.cli eval v1`, then `eval v2`, then `report`.
+7. `python -m salvage.cli eval v1`, then `eval v2`, then `report`. If you change the scoring rules, `rescore` re-applies them to the saved runs for free.
 
 All of these use the venv: prefix with `.venv/bin/` or activate it.
 
