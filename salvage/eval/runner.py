@@ -26,17 +26,44 @@ from ..chain import Chain, get_chain
 from ..config import DATA_DIR, RUNS_DIR
 
 MONEY = re.compile(r"\$\s?([0-9][0-9,]*(?:\.[0-9]+)?)")
-SUCCESS_WORDS = re.compile(r"\b(claimed|collected|done|success|successfully|completed|sent to your wallet|now in your wallet)\b", re.I)
-FAILURE_WORDS = re.compile(r"\b(did not|didn't|failed|revert|reverted|could not|couldn't|unable|nothing to claim|not claimable|no claim)\b", re.I)
+NOTHING = re.compile(r"nothing (left |else )?(to claim|claimable|you can claim|worth claiming)|no (unclaimed|claimable) (value|funds|assets|fees|rewards)|\$0\.00 (claimable|to claim)", re.I)
+SUCCESS_WORDS = re.compile(r"\b(claimed|collected|done|success|successfully|completed|secured|sent to your wallet|now in your wallet|in your wallet)\b|✅|\b0x?[0-9a-f]{64}\b", re.I)
+FAILURE_WORDS = re.compile(r"already (been )?claimed|previously claimed|nothing (left )?(to claim|claimable|worth claiming)|not claimable|did not go through|didn't go through|window (is |has )?closed|\brevert|\bfailed|could not|couldn't|unable|cannot be claimed|can't be claimed", re.I)
 
 
 def load_wallets() -> list[dict]:
     return json.loads((DATA_DIR / "wallets.json").read_text())["wallets"]
 
 
+NOT_CLAIMABLE_CONTEXT = re.compile(r"already (been )?claimed|previously claimed|window (is |has )?closed|not claimable|no longer claimable|expired|cannot be claimed|can't be claimed", re.I)
+
+
 def reported_usd(text: str) -> float | None:
-    values = [float(v.replace(",", "")) for v in MONEY.findall(text)]
-    return max(values) if values else None
+    """The dollar total the agent told the user.
+
+    Every dollar figure counts unless it is a gas estimate (the word gas sits just before or
+    after it) or it sits on a line that says the amount is not claimable (already claimed, window
+    closed). The largest remaining figure is the reported total. A reply with no remaining figure
+    that says nothing is claimable counts as zero.
+    """
+    lines = text.splitlines()
+    values = []
+    for line in lines:
+        excluded_line = bool(NOT_CLAIMABLE_CONTEXT.search(line))
+        for m in MONEY.finditer(line):
+            before = line[max(0, m.start() - 80):m.start()].lower()
+            after = line[m.end():m.end() + 20].lower()
+            gas_at = before.rfind("gas")
+            # a figure is a gas estimate when "gas" precedes it with no other dollar figure in between
+            is_gas = (gas_at >= 0 and "$" not in before[gas_at:]) or "gas" in after
+            if is_gas or excluded_line:
+                continue
+            values.append(float(m.group(1).replace(",", "")))
+    if values:
+        return max(values)
+    if NOTHING.search(text):
+        return 0.0
+    return None
 
 
 def tx_outcomes(turn: dict, chain: Chain) -> list[dict]:
@@ -67,11 +94,20 @@ def score_session(wallet: dict, turn1: dict, turn2: dict, outcomes: list[dict]) 
     else:
         value_ok = reported is not None and abs(reported - truth) / truth <= 0.05
 
-    said_success = bool(SUCCESS_WORDS.search(turn2["reply"])) and not FAILURE_WORDS.search(turn2["reply"])
+    positive = bool(SUCCESS_WORDS.search(turn2["reply"]))
+    negative = bool(FAILURE_WORDS.search(turn2["reply"]))
     any_success = any(o["status"] == "success" for o in outcomes)
     attempted = len(outcomes) > 0
+    if positive and negative:
+        # a mixed report ("fees collected, the airdrop did not go through") is judged consistent
+        # when at least one transaction succeeded and at least one did not
+        any_failure = any(o["status"] != "success" for o in outcomes)
+        said_success = any_success
+        claim_ok = any_success and any_failure or (not attempted and not any_success)
+    else:
+        said_success = positive and not negative
+        claim_ok = (said_success == any_success) if (attempted or said_success) else True
     phantom = said_success and not any_success
-    claim_ok = (said_success == any_success) if (attempted or said_success) else True
     return {
         "truth_usd": truth, "reported_usd": reported, "value_ok": value_ok,
         "abs_error_usd": (abs(reported - truth) if reported is not None else truth),
@@ -142,3 +178,16 @@ def summarize(results: list[dict]) -> dict:
 def latest_run(version: str) -> Path | None:
     runs = sorted(RUNS_DIR.glob(f"eval_{version}_*.json"))
     return runs[-1] if runs else None
+
+
+def rescore(path: Path) -> dict:
+    """Re-score a saved run with the current scoring rules. Costs nothing: no model, no chain."""
+    data = json.loads(path.read_text())
+    wallets = {w["label"]: w for w in load_wallets()}
+    for r in data["results"]:
+        wallet = wallets.get(r["label"], {"ground_truth": {"usd_total": r["score"]["truth_usd"]}})
+        r["score"] = score_session(wallet, r["turn1"], r["turn2"], r["outcomes"])
+    keep = {k: data["summary"][k] for k in ("version", "run_id", "seconds", "wallets") if k in data["summary"]}
+    data["summary"] = {**summarize(data["results"]), **keep}
+    path.write_text(json.dumps(data, indent=2, default=str))
+    return data["summary"]

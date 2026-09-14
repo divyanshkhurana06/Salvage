@@ -5,6 +5,7 @@
     python -m salvage.cli raw <address>          raw scan of one wallet (what v1 sees)
     python -m salvage.cli chat [v1|v2]           talk to the agent
     python -m salvage.cli eval <v1|v2> [limit]   run the wallet set through a version and score it
+    python -m salvage.cli rescore                re-score the latest runs with the current rules (no model calls)
     python -m salvage.cli report                 before and after table for the latest v1 and v2 runs
     python -m salvage.cli serve [port]           start the web UI
 """
@@ -66,6 +67,15 @@ def cmd_eval(version: str, limit: int | None) -> None:
     run_eval(version, limit=limit)
 
 
+def cmd_rescore() -> None:
+    from .eval.runner import latest_run, rescore
+
+    for version in ("v1", "v2"):
+        path = latest_run(version)
+        if path:
+            print(version, json.dumps(rescore(path), indent=2))
+
+
 def cmd_report() -> None:
     from .eval.report import compare, worst_examples
 
@@ -100,6 +110,8 @@ def main(argv: list[str] | None = None) -> None:
         cmd_chat(args[0] if args else settings.agent_version)
     elif cmd == "eval":
         cmd_eval(args[0], int(args[1]) if len(args) > 1 else None)
+    elif cmd == "rescore":
+        cmd_rescore()
     elif cmd == "report":
         cmd_report()
     elif cmd == "serve":
