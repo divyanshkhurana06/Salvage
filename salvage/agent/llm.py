@@ -47,9 +47,23 @@ class AnthropicLLM(LLM):
         self.max_tokens = max_tokens
 
     def complete(self, system: str, messages: list[dict], tools: list[dict]) -> ModelReply:
-        resp = self.client.messages.create(
-            model=self.model_id, max_tokens=self.max_tokens, system=system, messages=messages, tools=tools,
-        )
+        import time
+
+        import anthropic
+
+        # the SDK retries quickly on its own; this outer loop rides out longer network blips
+        delays = [5, 15, 30]
+        for attempt in range(len(delays) + 1):
+            try:
+                resp = self.client.messages.create(
+                    model=self.model_id, max_tokens=self.max_tokens, system=system, messages=messages, tools=tools,
+                )
+                break
+            except (anthropic.APIConnectionError, anthropic.RateLimitError, anthropic.InternalServerError) as exc:
+                if attempt == len(delays):
+                    raise
+                print(f"[model] {type(exc).__name__}, retrying in {delays[attempt]}s")
+                time.sleep(delays[attempt])
         text_parts, calls, raw = [], [], []
         for block in resp.content:
             if block.type == "text":
