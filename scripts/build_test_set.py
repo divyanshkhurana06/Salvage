@@ -103,13 +103,19 @@ def main() -> None:
     for k in range(13, 17):
         wallets.append({"label": f"empty_{k:02d}", "address": synthetic_address(k), "cohort": "empty"})
 
-    # airdrop entries: deterministic amounts in USDC (6 decimals)
+    # airdrop entries in USDC (6 decimals). A realistic spread on purpose: a couple just above the
+    # gas an airdrop claim costs (about a quarter), a couple just below it, some mid sized, a few large.
+    amounts = {
+        "both_01": 12.40, "both_02": 48.75, "both_03": 137.00, "both_04": 310.50, "both_05": 620.00, "both_06": 980.25,
+        "airdrop_01": 0.31, "airdrop_02": 0.19, "airdrop_03": 3.75, "airdrop_04": 22.10, "airdrop_05": 75.00, "airdrop_06": 410.00,
+        "claimed_07": 55.00, "claimed_08": 120.00, "claimed_09": 260.00,
+        "expired_10": 250.00, "expired_11": 0.21, "expired_12": 370.00,
+    }
     open_entries, closed_entries = [], []
     for i, w in enumerate(w for w in wallets if w["cohort"] in ("both", "airdrop", "claimed_airdrop")):
-        amount = (137 + 83 * i) * 10**6 + (i * 123457) % 10**6
-        open_entries.append((i, w["address"], amount))
+        open_entries.append((i, w["address"], int(round(amounts[w["label"]] * 10**6))))
     for i, w in enumerate(w for w in wallets if w["cohort"] == "expired_airdrop"):
-        closed_entries.append((i, w["address"], (250 + 60 * i) * 10**6))
+        closed_entries.append((i, w["address"], int(round(amounts[w["label"]] * 10**6))))
 
     open_root, open_proofs = airdrops.build_tree(open_entries)
     closed_root, closed_proofs = airdrops.build_tree(closed_entries)

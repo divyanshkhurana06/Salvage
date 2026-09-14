@@ -146,6 +146,7 @@ def claim(body: ClaimIn) -> dict:
     ex = _executors(body.conversation_id)
     scan_result = ex["scan_wallet"](address)
     gas_usd = ex["estimate_gas_cost"]("collect")["usd"]
+    airdrop_gas_usd = ex["estimate_gas_cost"]("airdrop")["usd"]
     said, received, skipped = [], 0.0, []
     for p in scan_result["uniswap"]["positions"]:
         if p["usd_total"] <= gas_usd:
@@ -160,6 +161,9 @@ def claim(body: ClaimIn) -> dict:
     for d in scan_result["airdrops"]["airdrops"]:
         if not d["claimable"]:
             skipped.append(f"airdrop {d['name']} is {d['status']}")
+            continue
+        if d["usd"] is not None and d["usd"] <= airdrop_gas_usd:
+            skipped.append(f"airdrop {d['name']} worth {_dollars(d['usd'])}, less than the {_dollars(airdrop_gas_usd)} of gas to claim it")
             continue
         r = ex["claim_airdrop"](d["distributor"])
         if r["status"] == "success":
