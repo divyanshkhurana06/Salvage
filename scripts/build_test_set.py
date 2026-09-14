@@ -30,6 +30,7 @@ from salvage.tools import airdrops, claims, uniswap  # noqa: E402
 
 USDC = PRICED_TOKENS["USDC"][0]
 DEPLOYER = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"  # first Anvil dev account
+MAX_POSITIONS_PER_WALLET = 8
 USDC_HOLDERS = [
     "0x55FE002aefF02F77364de339a1292923A15844B8",
     "0x28C6c06298d514Db089934071355E5743bf21d60",
@@ -73,11 +74,20 @@ def main() -> None:
     if not candidates:
         raise SystemExit("run scripts/probe_positions.py first")
 
-    # distinct owners, richest first, up to 12 fee wallets
+    # distinct owners, richest first, up to 12 fee wallets. Wallets with many positions are skipped:
+    # each position costs several node reads, and a scan that takes minutes is no good for a demo.
     by_owner: dict[str, dict] = {}
     for c in sorted(candidates, key=lambda c: -c["usd"]):
         by_owner.setdefault(c["owner"].lower(), c)
-    fee_wallets = list(by_owner.values())[:12]
+    fee_wallets = []
+    for c in by_owner.values():
+        n = uniswap.position_count(c["owner"], chain)
+        if n <= MAX_POSITIONS_PER_WALLET:
+            fee_wallets.append(c)
+        else:
+            print(f"  skipping {c['owner']} ({n} positions)")
+        if len(fee_wallets) == 12:
+            break
     print(f"{len(fee_wallets)} fee wallets from {len(candidates)} candidates")
 
     wallets: list[dict] = []

@@ -1,0 +1,453 @@
+{
+  "block": 25975686,
+  "wallets": [
+    {
+      "label": "both_01",
+      "address": "0x6711179F900d2841C54A738Bd8cdea14dA342B68",
+      "cohort": "both",
+      "ground_truth": {
+        "usd_total": 152.48,
+        "fee_positions": [
+          {
+            "token_id": 1249936,
+            "usd": 15.5
+          }
+        ],
+        "airdrops": [
+          {
+            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
+            "status": "claimable",
+            "usd": 136.97896639
+          }
+        ]
+      }
+    },
+    {
+      "label": "both_02",
+      "address": "0x4799704B15a9853Bbe8a85ed88995c4E4D26c8dA",
+      "cohort": "both",
+      "ground_truth": {
+        "usd_total": 225.98,
+        "fee_positions": [
+          {
+            "token_id": 1364991,
+            "usd": 5.89
+          }
+        ],
+        "airdrops": [
+          {
+            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
+            "status": "claimable",
+            "usd": 220.0896614456468
+          }
+        ]
+      }
+    },
+    {
+      "label": "both_03",
+      "address": "0x625824376Be84DE62e6826d498e261e9980cBF99",
+      "cohort": "both",
+      "ground_truth": {
+        "usd_total": 308.14,
+        "fee_positions": [
+          {
+            "token_id": 1364980,
+            "usd": 4.94
+          }
+        ],
+        "airdrops": [
+          {
+            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
+            "status": "claimable",
+            "usd": 303.2003565012936
+          }
+        ]
+      }
+    },
+    {
+      "label": "both_04",
+      "address": "0x4C44Fe4732a9a6E5A641191E1eE1Be29136ddCbE",
+      "cohort": "both",
+      "ground_truth": {
+        "usd_total": 389.3,
+        "fee_positions": [
+          {
+            "token_id": 1364959,
+            "usd": 2.99
+          }
+        ],
+        "airdrops": [
+          {
+            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
+            "status": "claimable",
+            "usd": 386.31105155694036
+          }
+        ]
+      }
+    },
+    {
+      "label": "both_05",
+      "address": "0x34fc62102AC6b1cD026B432E742a53ce3CaC0509",
+      "cohort": "both",
+      "ground_truth": {
+        "usd_total": 472.4,
+        "fee_positions": [
+          {
+            "token_id": 1364996,
+            "usd": 2.98
+          }
+        ],
+        "airdrops": [
+          {
+            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
+            "status": "claimable",
+            "usd": 469.4217466125872
+          }
+        ]
+      }
+    },
+    {
+      "label": "both_06",
+      "address": "0xffa0557CD4653106A245c5a0386e5979A229A2e1",
+      "cohort": "both",
+      "ground_truth": {
+        "usd_total": 554.81,
+        "fee_positions": [
+          {
+            "token_id": 1365019,
+            "usd": 2.28
+          }
+        ],
+        "airdrops": [
+          {
+            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
+            "status": "claimable",
+            "usd": 552.532441668234
+          }
+        ]
+      }
+    },
+    {
+      "label": "fees_07",
+      "address": "0x57c1DeE25aD30019c580CEf0Fd7C7a5274a8B5d4",
+      "cohort": "fees",
+      "ground_truth": {
+        "usd_total": 2.19,
+        "fee_positions": [
+          {
+            "token_id": 1364954,
+            "usd": 2.19
+          }
+        ],
+        "airdrops": []
+      }
+    },
+    {
+      "label": "fees_08",
+      "address": "0x2ACf96Fa7270867d8E04A20C5968a268CCf09d94",
+      "cohort": "fees",
+      "ground_truth": {
+        "usd_total": 0.5,
+        "fee_positions": [
+          {
+            "token_id": 1364917,
+            "usd": 0.5
+          }
+        ],
+        "airdrops": []
+      }
+    },
+    {
+      "label": "fees_09",
+      "address": "0xAaf2d357C0bdCb5F1414356e762A76FAEEe75a3e",
+      "cohort": "fees",
+      "ground_truth": {
+        "usd_total": 0.26,
+        "fee_positions": [
+          {
+            "token_id": 1364972,
+            "usd": 0.26
+          }
+        ],
+        "airdrops": []
+      }
+    },
+    {
+      "label": "fees_10",
+      "address": "0xeE71321045E2278D8995300f41C0Aa7bE8d08918",
+      "cohort": "fees",
+      "ground_truth": {
+        "usd_total": 0.24,
+        "fee_positions": [
+          {
+            "token_id": 1364981,
+            "usd": 0.24
+          }
+        ],
+        "airdrops": []
+      }
+    },
+    {
+      "label": "fees_11",
+      "address": "0x1D899a8eCBA165c181Db933e3B82205b23E58c0D",
+      "cohort": "fees",
+      "ground_truth": {
+        "usd_total": 0.08,
+        "fee_positions": [
+          {
+            "token_id": 1364993,
+            "usd": 0.08
+          }
+        ],
+        "airdrops": []
+      }
+    },
+    {
+      "label": "fees_12",
+      "address": "0xCe88eD0869b108B834d69bd7bEa5be5619d715Ac",
+      "cohort": "fees",
+      "ground_truth": {
+        "usd_total": 0.04,
+        "fee_positions": [
+          {
+            "token_id": 1364913,
+            "usd": 0.04
+          }
+        ],
+        "airdrops": []
+      }
+    },
+    {
+      "label": "airdrop_01",
+      "address": "0xf423EAe5a92375A90B98e3Fe9b3b7610deFFcA24",
+      "cohort": "airdrop",
+      "ground_truth": {
+        "usd_total": 635.64,
+        "fee_positions": [],
+        "airdrops": [
+          {
+            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
+            "status": "claimable",
+            "usd": 635.6431367238807
+          }
+        ]
+      }
+    },
+    {
+      "label": "airdrop_02",
+      "address": "0x143745D059Bb4AcC629da068cBF94dE287FACa3E",
+      "cohort": "airdrop",
+      "ground_truth": {
+        "usd_total": 718.75,
+        "fee_positions": [],
+        "airdrops": [
+          {
+            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
+            "status": "claimable",
+            "usd": 718.7538317795276
+          }
+        ]
+      }
+    },
+    {
+      "label": "airdrop_03",
+      "address": "0x32dE33a67868be20c99319944b5fbE6b35f19457",
+      "cohort": "airdrop",
+      "ground_truth": {
+        "usd_total": 801.86,
+        "fee_positions": [],
+        "airdrops": [
+          {
+            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
+            "status": "claimable",
+            "usd": 801.8645268351744
+          }
+        ]
+      }
+    },
+    {
+      "label": "airdrop_04",
+      "address": "0xD4B9dC8391301706592B3a8f2CCFEe83460b026D",
+      "cohort": "airdrop",
+      "ground_truth": {
+        "usd_total": 883.98,
+        "fee_positions": [],
+        "airdrops": [
+          {
+            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
+            "status": "claimable",
+            "usd": 883.9753754208211
+          }
+        ]
+      }
+    },
+    {
+      "label": "airdrop_05",
+      "address": "0x8ED9a24885e153b25A3f767686766184969D65c6",
+      "cohort": "airdrop",
+      "ground_truth": {
+        "usd_total": 967.09,
+        "fee_positions": [],
+        "airdrops": [
+          {
+            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
+            "status": "claimable",
+            "usd": 967.0860704764679
+          }
+        ]
+      }
+    },
+    {
+      "label": "airdrop_06",
+      "address": "0x5B61499B46A63513FDcB690143D250B93a51C330",
+      "cohort": "airdrop",
+      "ground_truth": {
+        "usd_total": 1050.2,
+        "fee_positions": [],
+        "airdrops": [
+          {
+            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
+            "status": "claimable",
+            "usd": 1050.1967655321148
+          }
+        ]
+      }
+    },
+    {
+      "label": "claimed_07",
+      "address": "0x2f488ab87CC8E317077BAFCc7cCe5A2775B4cB5D",
+      "cohort": "claimed_airdrop",
+      "ground_truth": {
+        "usd_total": 0.0,
+        "fee_positions": [],
+        "airdrops": [
+          {
+            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
+            "status": "already claimed",
+            "usd": 1133.3074605877614
+          }
+        ]
+      }
+    },
+    {
+      "label": "claimed_08",
+      "address": "0x38085223F151D88663a5683984319010918d2b4b",
+      "cohort": "claimed_airdrop",
+      "ground_truth": {
+        "usd_total": 0.0,
+        "fee_positions": [],
+        "airdrops": [
+          {
+            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
+            "status": "already claimed",
+            "usd": 1216.4181556434085
+          }
+        ]
+      }
+    },
+    {
+      "label": "claimed_09",
+      "address": "0x11E1C76d97532d6b3824EB01d829bA64C3C09cc7",
+      "cohort": "claimed_airdrop",
+      "ground_truth": {
+        "usd_total": 0.0,
+        "fee_positions": [],
+        "airdrops": [
+          {
+            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
+            "status": "already claimed",
+            "usd": 1299.528850699055
+          }
+        ]
+      }
+    },
+    {
+      "label": "expired_10",
+      "address": "0x11067e22C9377be5245947a6e8D8Aa4d246129C9",
+      "cohort": "expired_airdrop",
+      "ground_truth": {
+        "usd_total": 0.0,
+        "fee_positions": [],
+        "airdrops": [
+          {
+            "distributor": "0xD7D0ceccBfbdDb260aCF22010D749f0160057663",
+            "status": "window closed",
+            "usd": 249.96161750000002
+          }
+        ]
+      }
+    },
+    {
+      "label": "expired_11",
+      "address": "0xf9960872098288C7aE368AA9216E1299065470bd",
+      "cohort": "expired_airdrop",
+      "ground_truth": {
+        "usd_total": 0.0,
+        "fee_positions": [],
+        "airdrops": [
+          {
+            "distributor": "0xD7D0ceccBfbdDb260aCF22010D749f0160057663",
+            "status": "window closed",
+            "usd": 309.9524057
+          }
+        ]
+      }
+    },
+    {
+      "label": "expired_12",
+      "address": "0x0D563547cf90Efb28ea3c9d0fb971b5dD08d1765",
+      "cohort": "expired_airdrop",
+      "ground_truth": {
+        "usd_total": 0.0,
+        "fee_positions": [],
+        "airdrops": [
+          {
+            "distributor": "0xD7D0ceccBfbdDb260aCF22010D749f0160057663",
+            "status": "window closed",
+            "usd": 369.94319390000004
+          }
+        ]
+      }
+    },
+    {
+      "label": "empty_13",
+      "address": "0x1EAE6aAdf3c2D98FCBfc721e26F2d4e0c7bB1533",
+      "cohort": "empty",
+      "ground_truth": {
+        "usd_total": 0.0,
+        "fee_positions": [],
+        "airdrops": []
+      }
+    },
+    {
+      "label": "empty_14",
+      "address": "0x3A99423289C5f93EBE1a2eb047C5248a09D89f07",
+      "cohort": "empty",
+      "ground_truth": {
+        "usd_total": 0.0,
+        "fee_positions": [],
+        "airdrops": []
+      }
+    },
+    {
+      "label": "empty_15",
+      "address": "0xad855c75E0d797c970aCE801f3D3Fe47c0CB5eDd",
+      "cohort": "empty",
+      "ground_truth": {
+        "usd_total": 0.0,
+        "fee_positions": [],
+        "airdrops": []
+      }
+    },
+    {
+      "label": "empty_16",
+      "address": "0xd550f496B90eCA2cFed3bc0F7d7b99feAB455154",
+      "cohort": "empty",
+      "ground_truth": {
+        "usd_total": 0.0,
+        "fee_positions": [],
+        "airdrops": []
+      }
+    }
+  ]
+}

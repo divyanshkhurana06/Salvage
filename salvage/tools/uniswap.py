@@ -10,12 +10,21 @@ from __future__ import annotations
 from ..chain import Chain, get_chain
 from ..contracts import MAX_UINT128
 
+# Some wallets hold hundreds of positions. Every position costs several node reads, so scans
+# stop after this many and report how many exist, instead of taking minutes.
+MAX_POSITIONS = 20
 
-def owned_position_ids(owner: str, chain: Chain | None = None) -> list[int]:
+
+def position_count(owner: str, chain: Chain | None = None) -> int:
+    chain = chain or get_chain()
+    return int(chain.position_manager.functions.balanceOf(chain.checksum(owner)).call())
+
+
+def owned_position_ids(owner: str, chain: Chain | None = None, limit: int = MAX_POSITIONS) -> list[int]:
     chain = chain or get_chain()
     npm = chain.position_manager
     owner = chain.checksum(owner)
-    count = int(npm.functions.balanceOf(owner).call())
+    count = min(int(npm.functions.balanceOf(owner).call()), limit)
     return [int(npm.functions.tokenOfOwnerByIndex(owner, i).call()) for i in range(count)]
 
 
@@ -47,6 +56,7 @@ def scan_fees_raw(owner: str, chain: Chain | None = None) -> dict:
     """What v1 sees: the chain's integers, nothing converted, nothing priced."""
     chain = chain or get_chain()
     owner = chain.checksum(owner)
+    total = position_count(owner, chain)
     positions = []
     for token_id in owned_position_ids(owner, chain):
         info = position_info(token_id, chain)
@@ -60,7 +70,7 @@ def scan_fees_raw(owner: str, chain: Chain | None = None) -> dict:
             "symbol0": sym0, "symbol1": sym1,
             "amount0": a0, "amount1": a1,
         })
-    return {"owner": owner, "positions": positions, "block": chain.block_number}
+    return {"owner": owner, "positions": positions, "positions_total": total, "positions_scanned": len(positions), "block": chain.block_number}
 
 
 def scan_fees(owner: str, chain: Chain | None = None) -> dict:
@@ -92,4 +102,5 @@ def scan_fees(owner: str, chain: Chain | None = None) -> dict:
             "usd_total": round(pos_usd, 2),
             "fully_priced": usd0 is not None and usd1 is not None,
         })
-    return {"owner": raw["owner"], "block": raw["block"], "positions": out, "usd_total": round(total_usd, 2)}
+    return {"owner": raw["owner"], "block": raw["block"], "positions": out, "positions_total": raw["positions_total"],
+            "positions_scanned": raw["positions_scanned"], "usd_total": round(total_usd, 2)}
