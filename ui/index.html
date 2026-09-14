@@ -68,8 +68,9 @@
   </section>
 </main>
 <script>
-let version = 'v2', sessionId = null, currentWallet = null;
+let version = 'v2', sessionId = null, currentWallet = null, sessionPromise = null;
 const $ = id => document.getElementById(id);
+const TOOLS_HEADER = '<div class="warn">Every tool call below is also sent to PRISM as a span. The numbers the agent reports on the left can be checked against the numbers the tools returned here.</div>';
 
 async function api(path, body) {
   const r = await fetch(path, body ? {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)} : {});
@@ -79,15 +80,20 @@ async function api(path, body) {
 function add(kind, text) { const d = document.createElement('div'); d.className = 'msg ' + kind; d.textContent = text; $('chat').appendChild(d); $('chat').scrollTop = 1e9; }
 function setVersion(v) { version = v; $('v1').classList.toggle('on', v === 'v1'); $('v2').classList.toggle('on', v === 'v2'); newSession(); }
 async function newSession() {
-  const s = await api('/api/session', {version});
-  sessionId = s.session_id; $('meta').textContent = 'session ' + sessionId + ' (this is the PRISM session id)';
-  $('chat').innerHTML = ''; add('sys', 'New ' + version + ' session started.');
+  sessionId = null;
+  $('chat').innerHTML = ''; $('tools').innerHTML = TOOLS_HEADER; $('meta').textContent = 'starting ' + version + ' session...';
+  sessionPromise = api('/api/session', {version}).then(s => {
+    sessionId = s.session_id; $('meta').textContent = 'session ' + sessionId + ' (this is the PRISM session id)';
+    add('sys', 'New ' + version + ' session started.');
+    return s;
+  });
+  return sessionPromise;
 }
 async function resetFork() { const r = await api('/api/reset_fork', {}); add('sys', 'Fork reset to block ' + r.block + '. Claims undone.'); await newSession(); }
 function ask(text) { $('input').value = text; send(); }
 async function send() {
   const text = $('input').value.trim(); if (!text) return;
-  if (!sessionId) await newSession();
+  if (!sessionId) await (sessionPromise || newSession());
   $('input').value = ''; add('user', text);
   const m = text.match(/0x[a-fA-F0-9]{40}/); if (m) currentWallet = m[0];
   add('sys', 'thinking...');
