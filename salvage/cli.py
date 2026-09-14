@@ -7,6 +7,7 @@
     python -m salvage.cli eval <v1|v2> [limit]   run the wallet set through a version and score it
     python -m salvage.cli rescore                re-score the latest runs with the current rules (no model calls)
     python -m salvage.cli report                 before and after table for the latest v1 and v2 runs
+    python -m salvage.cli evidence               write EVIDENCE.md: the table, the PRISM session names, the worst replies
     python -m salvage.cli serve [port]           start the web UI
 """
 
@@ -88,6 +89,16 @@ def cmd_report() -> None:
                 print(f"  {b['label']}: truth ${b['truth']:,.2f}, reported {b['reported']}, phantom={b['phantom']}\n    {b['reply1'][:200]}")
 
 
+def cmd_evidence() -> None:
+    from pathlib import Path
+
+    from .config import ROOT
+    from .eval.report import evidence_bundle
+
+    path = evidence_bundle(Path(ROOT) / "EVIDENCE.md")
+    print(f"wrote {path}")
+
+
 def cmd_serve(port: int) -> None:
     import uvicorn
 
@@ -114,6 +125,8 @@ def main(argv: list[str] | None = None) -> None:
         cmd_rescore()
     elif cmd == "report":
         cmd_report()
+    elif cmd == "evidence":
+        cmd_evidence()
     elif cmd == "serve":
         cmd_serve(int(args[0]) if args else 8000)
     else:
