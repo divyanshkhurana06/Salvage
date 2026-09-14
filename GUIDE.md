@@ -101,7 +101,11 @@ All of these use the venv: prefix with `.venv/bin/` or activate it.
 
 ## The demo, beat by beat
 
-Two screens: the Salvage UI on the left, PRISM on the right.
+Two screens: the Salvage UI on the left, PRISM on the right. `scripts/demo.sh` brings the UI up; press **Reset fork** before you start so rehearsal claims are undone.
+
+The fastest version of the whole story is **side by side** mode: pick `fees_08` (worth $0.50), ask "What can I claim?", and watch v1 announce millions on the left while v2 says $0.50 and that gas costs more than that on the right. Then `expired_10` and "Claim everything that is worth claiming": v1 says claimed with a transaction hash, v2 says the window is closed. The tool panel tags every call with the version, so the raw integer and the receipt are on screen the whole time.
+
+The longer version:
 
 1. Toggle **v1**. Pick a wallet from the quick picks (one with fees). Ask "What can I claim?". v1 answers with a wrong total. On the right side of the UI, open the `scan_wallet` tool call: the raw integers the tool returned are right there under the wrong dollar figure.
 2. Open the same session in PRISM (the session id is at the bottom of the UI). Show the trace: tool output and reply side by side.

@@ -105,6 +105,14 @@ Talk to it, or run the web UI:
 .venv/bin/python -m salvage.cli serve 8000              # then open http://127.0.0.1:8000
 ```
 
+Or bring everything up with one command (starts the fork if needed, compiles, builds the wallet set if the fork is fresh, runs the doctor, serves the UI):
+
+```bash
+scripts/demo.sh
+```
+
+The UI has three modes: v1, v2, and **side by side**, which sends the same message to both versions and shows the two replies next to each other with every tool call tagged by version. The **Results** button shows the measured before and after table from the latest evaluation runs.
+
 Run the evaluation and print the before and after table:
 
 ```bash

@@ -5,20 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Salvage</title>
 <style>
-  :root { --green: #1B4332; --green2: #2D6A4F; --tint: #EEF4F0; --amber: #E9C46A; --amberTint: #FBF3DC; --ink: #1F2933; --muted: #5B6770; --line: #D6DEDA; }
+  :root { --green: #1B4332; --green2: #2D6A4F; --tint: #EEF4F0; --amber: #E9C46A; --amberTint: #FBF3DC; --ink: #1F2933; --muted: #5B6770; --line: #D6DEDA; --red: #9B2C2C; --redTint: #FBE9E7; }
   * { box-sizing: border-box; }
   body { margin: 0; font-family: Calibri, "Segoe UI", Arial, sans-serif; color: var(--ink); background: #fff; }
-  header { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; border-bottom: 1px solid var(--line); }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 24px; border-bottom: 1px solid var(--line); }
   header h1 { margin: 0; font-family: Cambria, Georgia, serif; font-size: 26px; color: var(--green); letter-spacing: 2px; }
   header .status { font-size: 12px; color: var(--muted); }
   .toggle { display: inline-flex; border: 1px solid var(--green); border-radius: 8px; overflow: hidden; }
   .toggle button { border: 0; background: #fff; color: var(--green); padding: 8px 14px; font-weight: 700; cursor: pointer; }
   .toggle button.on { background: var(--green); color: #fff; }
-  main { display: grid; grid-template-columns: 1.15fr 1fr; gap: 18px; padding: 18px 24px; height: calc(100vh - 62px); }
+  main { display: grid; grid-template-columns: 1.2fr 1fr; gap: 18px; padding: 16px 24px; height: calc(100vh - 60px); }
   .panel { border: 1px solid var(--line); border-radius: 12px; display: flex; flex-direction: column; min-height: 0; }
   .panel h2 { margin: 0; padding: 12px 16px; font-size: 14px; color: var(--green); border-bottom: 1px solid var(--line); background: var(--tint); border-radius: 12px 12px 0 0; }
-  .chat { flex: 1; overflow: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
-  .msg { max-width: 88%; padding: 10px 12px; border-radius: 10px; white-space: pre-wrap; line-height: 1.35; font-size: 14px; }
+  .chats { flex: 1; display: grid; grid-template-columns: 1fr; min-height: 0; }
+  .chats.compare { grid-template-columns: 1fr 1fr; }
+  .chat { overflow: auto; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; border-right: 1px solid var(--line); }
+  .chat:last-child { border-right: 0; }
+  .chat .col { font-size: 12px; font-weight: 700; color: var(--green); border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+  .msg { max-width: 92%; padding: 10px 12px; border-radius: 10px; white-space: pre-wrap; line-height: 1.35; font-size: 13.5px; }
   .msg.user { align-self: flex-end; background: var(--green); color: #fff; }
   .msg.bot { align-self: flex-start; background: var(--tint); }
   .msg.sys { align-self: center; color: var(--muted); font-size: 12px; background: transparent; }
@@ -30,20 +34,37 @@
   .tools { flex: 1; overflow: auto; padding: 12px 16px; font-size: 13px; }
   .call { border: 1px solid var(--line); border-radius: 10px; margin-bottom: 10px; }
   .call summary { cursor: pointer; padding: 8px 12px; font-weight: 700; color: var(--green); }
-  .call pre { margin: 0; padding: 8px 12px; background: var(--tint); font-size: 12px; overflow: auto; max-height: 260px; white-space: pre-wrap; }
+  .call pre { margin: 0; padding: 8px 12px; background: var(--tint); font-size: 12px; overflow: auto; max-height: 240px; white-space: pre-wrap; }
   .call .in { border-bottom: 1px solid var(--line); background: #fff; }
   .warn { background: var(--amberTint); border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; font-size: 13px; }
-  .wallets { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 16px; border-bottom: 1px solid var(--line); max-height: 120px; overflow: auto; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 6px; margin-right: 6px; color: #fff; background: var(--green2); }
+  .tag.v1 { background: var(--red); }
+  .wallets { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 16px; border-bottom: 1px solid var(--line); max-height: 96px; overflow: auto; }
   .wallets button { font-size: 12px; padding: 5px 8px; }
   .meta { font-size: 12px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); }
+  details.changed { margin-bottom: 12px; font-size: 13px; }
+  details.changed summary { cursor: pointer; font-weight: 700; color: var(--green); }
+  details.changed ul { margin: 6px 0 0 18px; padding: 0; }
+  #results { display: none; padding: 12px 24px 0; }
+  #results.open { display: block; }
+  #results table { border-collapse: collapse; font-size: 13px; margin-bottom: 10px; }
+  #results th, #results td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; }
+  #results th { background: var(--tint); color: var(--green); }
+  #results .note { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
 </style>
 </head>
 <body>
 <header>
   <h1>SALVAGE</h1>
-  <div class="toggle"><button id="v1" onclick="setVersion('v1')">v1 naive</button><button id="v2" class="on" onclick="setVersion('v2')">v2 verified</button></div>
+  <div class="toggle">
+    <button id="m-v1" onclick="setMode('v1')">v1 naive</button>
+    <button id="m-v2" class="on" onclick="setMode('v2')">v2 verified</button>
+    <button id="m-compare" onclick="setMode('compare')">side by side</button>
+  </div>
+  <button class="ghost" onclick="toggleResults()">Results</button>
   <div class="status" id="status">checking...</div>
 </header>
+<section id="results"></section>
 <main>
   <section class="panel">
     <h2>Conversation</h2>
@@ -52,10 +73,13 @@
       <button class="ghost" onclick="ask('What can I claim in wallet ' + (currentWallet || '') + '?')">What can I claim?</button>
       <button class="ghost" onclick="ask('Claim everything that is worth claiming.')">Claim everything worth claiming</button>
       <button class="ghost" onclick="ask('Is the gas worth it?')">Is the gas worth it?</button>
-      <button class="ghost" onclick="newSession()">New session</button>
+      <button class="ghost" onclick="newSessions()">New session</button>
       <button class="ghost" onclick="resetFork()">Reset fork</button>
     </div>
-    <div class="chat" id="chat"></div>
+    <div class="chats" id="chats">
+      <div class="chat" id="chat-v1"><div class="col">v1 naive</div></div>
+      <div class="chat" id="chat-v2"><div class="col">v2 verified</div></div>
+    </div>
     <div class="composer">
       <input id="input" placeholder="Paste a wallet address or ask something" onkeydown="if(event.key==='Enter') send()">
       <button class="primary" onclick="send()">Send</button>
@@ -64,63 +88,109 @@
   </section>
   <section class="panel">
     <h2>What the agent actually did (tool calls, in order)</h2>
-    <div class="tools" id="tools"><div class="warn">Every tool call below is also sent to PRISM as a span. The numbers the agent reports on the left can be checked against the numbers the tools returned here.</div></div>
+    <div class="tools" id="tools"></div>
   </section>
 </main>
 <script>
-let version = 'v2', sessionId = null, currentWallet = null, sessionPromise = null;
+let mode = 'v2', currentWallet = null;
+const sessions = { v1: null, v2: null };
+let sessionPromise = null;
 const $ = id => document.getElementById(id);
-const TOOLS_HEADER = '<div class="warn">Every tool call below is also sent to PRISM as a span. The numbers the agent reports on the left can be checked against the numbers the tools returned here.</div>';
+const TOOLS_HEADER = `<details class="changed"><summary>What changed in v2</summary><ul>
+  <li>Amounts are converted with the token's decimals and priced with Chainlink in code, never by the model.</li>
+  <li>Every claim is simulate, execute, read the receipt. The reply is written from the receipt.</li>
+  <li>The agent scans again before acting; switching wallets resets the conversation state.</li>
+  <li>Nothing to claim is a first class answer, with the gas estimate next to small amounts.</li>
+</ul></details>
+<div class="warn">Every tool call below is also sent to PRISM as a span. The numbers the agent reports on the left can be checked against the numbers the tools returned here.</div>`;
 
 async function api(path, body) {
   const r = await fetch(path, body ? {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)} : {});
   if (!r.ok) throw new Error(await r.text());
   return r.json();
 }
-function add(kind, text) { const d = document.createElement('div'); d.className = 'msg ' + kind; d.textContent = text; $('chat').appendChild(d); $('chat').scrollTop = 1e9; }
-function setVersion(v) { version = v; $('v1').classList.toggle('on', v === 'v1'); $('v2').classList.toggle('on', v === 'v2'); newSession(); }
-async function newSession() {
-  sessionId = null;
-  $('chat').innerHTML = ''; $('tools').innerHTML = TOOLS_HEADER; $('meta').textContent = 'starting ' + version + ' session...';
-  sessionPromise = api('/api/session', {version}).then(s => {
-    sessionId = s.session_id; $('meta').textContent = 'session ' + sessionId + ' (this is the PRISM session id)';
-    add('sys', 'New ' + version + ' session started.');
-    return s;
-  });
+function versions() { return mode === 'compare' ? ['v1', 'v2'] : [mode]; }
+function add(v, kind, text) {
+  const box = $('chat-' + v); const d = document.createElement('div'); d.className = 'msg ' + kind; d.textContent = text; box.appendChild(d); box.scrollTop = 1e9; return d;
+}
+function layout() {
+  $('chats').classList.toggle('compare', mode === 'compare');
+  $('chat-v1').style.display = versions().includes('v1') ? 'flex' : 'none';
+  $('chat-v2').style.display = versions().includes('v2') ? 'flex' : 'none';
+  for (const m of ['v1', 'v2', 'compare']) $('m-' + m).classList.toggle('on', m === mode);
+}
+function setMode(m) { mode = m; layout(); newSessions(); }
+async function newSessions() {
+  sessions.v1 = sessions.v2 = null;
+  for (const v of ['v1', 'v2']) $('chat-' + v).innerHTML = '<div class="col">' + (v === 'v1' ? 'v1 naive' : 'v2 verified') + '</div>';
+  $('tools').innerHTML = TOOLS_HEADER;
+  $('meta').textContent = 'starting session...';
+  sessionPromise = Promise.all(versions().map(v => api('/api/session', {version: v}).then(s => { sessions[v] = s.session_id; add(v, 'sys', 'New ' + v + ' session started.'); })))
+    .then(() => { $('meta').textContent = 'PRISM session ids: ' + versions().map(v => sessions[v]).join('   |   '); });
   return sessionPromise;
 }
-async function resetFork() { const r = await api('/api/reset_fork', {}); add('sys', 'Fork reset to block ' + r.block + '. Claims undone.'); await newSession(); }
+async function resetFork() { const r = await api('/api/reset_fork', {}); await newSessions(); add(versions()[0], 'sys', 'Fork reset to block ' + r.block + '. Claims undone.'); }
 function ask(text) { $('input').value = text; send(); }
 async function send() {
   const text = $('input').value.trim(); if (!text) return;
-  if (!sessionId) await (sessionPromise || newSession());
-  $('input').value = ''; add('user', text);
+  if (!versions().every(v => sessions[v])) await (sessionPromise || newSessions());
+  $('input').value = '';
   const m = text.match(/0x[a-fA-F0-9]{40}/); if (m) currentWallet = m[0];
-  add('sys', 'thinking...');
-  try {
-    const t = await api('/api/chat', {session_id: sessionId, message: text});
-    $('chat').lastChild.remove();
-    add('bot', t.reply);
-    if (t.active_wallet) currentWallet = t.active_wallet;
-    renderTools(t);
-  } catch (e) { $('chat').lastChild.remove(); add('sys', 'error: ' + e.message); }
+  await Promise.all(versions().map(async v => {
+    add(v, 'user', text);
+    const pending = add(v, 'sys', 'thinking...');
+    try {
+      const t = await api('/api/chat', {session_id: sessions[v], message: text});
+      pending.remove(); add(v, 'bot', t.reply);
+      if (t.active_wallet) currentWallet = t.active_wallet;
+      renderTools(v, t);
+    } catch (e) { pending.remove(); add(v, 'sys', 'error: ' + e.message); }
+  }));
 }
-function renderTools(t) {
+function renderTools(v, t) {
   const box = $('tools');
   const head = document.createElement('div'); head.className = 'warn';
-  head.textContent = 'turn trace ' + t.trace_id + ' (' + t.latency_ms + ' ms)';
+  head.innerHTML = '<span class="tag ' + v + '">' + v + '</span> turn trace ' + t.trace_id + ' (' + t.latency_ms + ' ms)';
   box.appendChild(head);
   if (!t.tool_calls.length) { const d = document.createElement('div'); d.textContent = 'no tool calls this turn'; box.appendChild(d); }
   for (const c of t.tool_calls) {
     const det = document.createElement('details'); det.className = 'call'; det.open = true;
-    det.innerHTML = '<summary>' + c.name + (c.error ? ' (error)' : '') + '</summary>' +
+    det.innerHTML = '<summary><span class="tag ' + v + '">' + v + '</span>' + c.name + (c.error ? ' (error)' : '') + '</summary>' +
       '<pre class="in">input: ' + JSON.stringify(c.input) + '</pre>' +
       '<pre>' + JSON.stringify(c.output, null, 2) + '</pre>';
     box.appendChild(det);
   }
   box.scrollTop = 1e9;
 }
+function tableFromMarkdown(md) {
+  const html = [];
+  let inTable = false;
+  for (const raw of md.split('\n')) {
+    const line = raw.trim();
+    if (line.startsWith('|')) {
+      const cells = line.split('|').slice(1, -1).map(s => s.trim());
+      if (cells.every(c => /^-+$/.test(c))) continue;
+      if (!inTable) { html.push('<table>'); inTable = true; html.push('<tr>' + cells.map(c => '<th>' + c + '</th>').join('') + '</tr>'); }
+      else html.push('<tr>' + cells.map(c => '<td>' + c + '</td>').join('') + '</tr>');
+    } else {
+      if (inTable) { html.push('</table>'); inTable = false; }
+      if (line) html.push('<div class="note">' + line + '</div>');
+    }
+  }
+  if (inTable) html.push('</table>');
+  return html.join('');
+}
+async function toggleResults() {
+  const box = $('results');
+  if (box.classList.contains('open')) { box.classList.remove('open'); return; }
+  try {
+    const r = await api('/api/report');
+    box.innerHTML = '<div class="note">Same 28 wallets, same fork state, two turns each. Scored against the chain: a reported value is correct within 5 percent of what the verified tools compute; a claim report is correct when it matches the receipts.</div>' + tableFromMarkdown(r.table);
+  } catch (e) { box.innerHTML = '<div class="note">no evaluation runs yet (python -m salvage.cli eval v1, eval v2)</div>'; }
+  box.classList.add('open');
+}
 async function init() {
+  layout();
   try {
     const s = await api('/api/status');
     $('status').textContent = 'fork ' + (s.fork.ok ? 'block ' + s.fork.block : 'down') + ' · model ' + (s.model ? 'ok' : 'missing') + ' · PRISM ' + (s.prism ? 'on' : 'offline log only');
@@ -132,7 +202,7 @@ async function init() {
       $('wallets').appendChild(b);
     }
   } catch (e) { $('status').textContent = 'status unavailable'; }
-  await newSession();
+  await newSessions();
 }
 init();
 </script>
