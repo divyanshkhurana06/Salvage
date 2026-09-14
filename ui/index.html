@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Salvage</title>
+<style>
+  :root { --green: #1B4332; --green2: #2D6A4F; --tint: #EEF4F0; --amber: #E9C46A; --amberTint: #FBF3DC; --ink: #1F2933; --muted: #5B6770; --line: #D6DEDA; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Calibri, "Segoe UI", Arial, sans-serif; color: var(--ink); background: #fff; }
+  header { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; border-bottom: 1px solid var(--line); }
+  header h1 { margin: 0; font-family: Cambria, Georgia, serif; font-size: 26px; color: var(--green); letter-spacing: 2px; }
+  header .status { font-size: 12px; color: var(--muted); }
+  .toggle { display: inline-flex; border: 1px solid var(--green); border-radius: 8px; overflow: hidden; }
+  .toggle button { border: 0; background: #fff; color: var(--green); padding: 8px 14px; font-weight: 700; cursor: pointer; }
+  .toggle button.on { background: var(--green); color: #fff; }
+  main { display: grid; grid-template-columns: 1.15fr 1fr; gap: 18px; padding: 18px 24px; height: calc(100vh - 62px); }
+  .panel { border: 1px solid var(--line); border-radius: 12px; display: flex; flex-direction: column; min-height: 0; }
+  .panel h2 { margin: 0; padding: 12px 16px; font-size: 14px; color: var(--green); border-bottom: 1px solid var(--line); background: var(--tint); border-radius: 12px 12px 0 0; }
+  .chat { flex: 1; overflow: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+  .msg { max-width: 88%; padding: 10px 12px; border-radius: 10px; white-space: pre-wrap; line-height: 1.35; font-size: 14px; }
+  .msg.user { align-self: flex-end; background: var(--green); color: #fff; }
+  .msg.bot { align-self: flex-start; background: var(--tint); }
+  .msg.sys { align-self: center; color: var(--muted); font-size: 12px; background: transparent; }
+  .composer { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--line); }
+  .composer input { flex: 1; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 14px; }
+  button.primary { background: var(--green); color: #fff; border: 0; border-radius: 8px; padding: 10px 14px; font-weight: 700; cursor: pointer; }
+  button.ghost { background: #fff; color: var(--green); border: 1px solid var(--green); border-radius: 8px; padding: 8px 12px; cursor: pointer; font-size: 13px; }
+  .quick { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--line); }
+  .tools { flex: 1; overflow: auto; padding: 12px 16px; font-size: 13px; }
+  .call { border: 1px solid var(--line); border-radius: 10px; margin-bottom: 10px; }
+  .call summary { cursor: pointer; padding: 8px 12px; font-weight: 700; color: var(--green); }
+  .call pre { margin: 0; padding: 8px 12px; background: var(--tint); font-size: 12px; overflow: auto; max-height: 260px; white-space: pre-wrap; }
+  .call .in { border-bottom: 1px solid var(--line); background: #fff; }
+  .warn { background: var(--amberTint); border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; font-size: 13px; }
+  .wallets { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 16px; border-bottom: 1px solid var(--line); max-height: 120px; overflow: auto; }
+  .wallets button { font-size: 12px; padding: 5px 8px; }
+  .meta { font-size: 12px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); }
+</style>
+</head>
+<body>
+<header>
+  <h1>SALVAGE</h1>
+  <div class="toggle"><button id="v1" onclick="setVersion('v1')">v1 naive</button><button id="v2" class="on" onclick="setVersion('v2')">v2 verified</button></div>
+  <div class="status" id="status">checking...</div>
+</header>
+<main>
+  <section class="panel">
+    <h2>Conversation</h2>
+    <div class="wallets" id="wallets"></div>
+    <div class="quick">
+      <button class="ghost" onclick="ask('What can I claim in wallet ' + (currentWallet || '') + '?')">What can I claim?</button>
+      <button class="ghost" onclick="ask('Claim everything that is worth claiming.')">Claim everything worth claiming</button>
+      <button class="ghost" onclick="ask('Is the gas worth it?')">Is the gas worth it?</button>
+      <button class="ghost" onclick="newSession()">New session</button>
+      <button class="ghost" onclick="resetFork()">Reset fork</button>
+    </div>
+    <div class="chat" id="chat"></div>
+    <div class="composer">
+      <input id="input" placeholder="Paste a wallet address or ask something" onkeydown="if(event.key==='Enter') send()">
+      <button class="primary" onclick="send()">Send</button>
+    </div>
+    <div class="meta" id="meta">no session yet</div>
+  </section>
+  <section class="panel">
+    <h2>What the agent actually did (tool calls, in order)</h2>
+    <div class="tools" id="tools"><div class="warn">Every tool call below is also sent to PRISM as a span. The numbers the agent reports on the left can be checked against the numbers the tools returned here.</div></div>
+  </section>
+</main>
+<script>
+let version = 'v2', sessionId = null, currentWallet = null;
+const $ = id => document.getElementById(id);
+
+async function api(path, body) {
+  const r = await fetch(path, body ? {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)} : {});
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+function add(kind, text) { const d = document.createElement('div'); d.className = 'msg ' + kind; d.textContent = text; $('chat').appendChild(d); $('chat').scrollTop = 1e9; }
+function setVersion(v) { version = v; $('v1').classList.toggle('on', v === 'v1'); $('v2').classList.toggle('on', v === 'v2'); newSession(); }
+async function newSession() {
+  const s = await api('/api/session', {version});
+  sessionId = s.session_id; $('meta').textContent = 'session ' + sessionId + ' (this is the PRISM session id)';
+  $('chat').innerHTML = ''; add('sys', 'New ' + version + ' session started.');
+}
+async function resetFork() { const r = await api('/api/reset_fork', {}); add('sys', 'Fork reset to block ' + r.block + '. Claims undone.'); await newSession(); }
+function ask(text) { $('input').value = text; send(); }
+async function send() {
+  const text = $('input').value.trim(); if (!text) return;
+  if (!sessionId) await newSession();
+  $('input').value = ''; add('user', text);
+  const m = text.match(/0x[a-fA-F0-9]{40}/); if (m) currentWallet = m[0];
+  add('sys', 'thinking...');
+  try {
+    const t = await api('/api/chat', {session_id: sessionId, message: text});
+    $('chat').lastChild.remove();
+    add('bot', t.reply);
+    if (t.active_wallet) currentWallet = t.active_wallet;
+    renderTools(t);
+  } catch (e) { $('chat').lastChild.remove(); add('sys', 'error: ' + e.message); }
+}
+function renderTools(t) {
+  const box = $('tools');
+  const head = document.createElement('div'); head.className = 'warn';
+  head.textContent = 'turn trace ' + t.trace_id + ' (' + t.latency_ms + ' ms)';
+  box.appendChild(head);
+  if (!t.tool_calls.length) { const d = document.createElement('div'); d.textContent = 'no tool calls this turn'; box.appendChild(d); }
+  for (const c of t.tool_calls) {
+    const det = document.createElement('details'); det.className = 'call'; det.open = true;
+    det.innerHTML = '<summary>' + c.name + (c.error ? ' (error)' : '') + '</summary>' +
+      '<pre class="in">input: ' + JSON.stringify(c.input) + '</pre>' +
+      '<pre>' + JSON.stringify(c.output, null, 2) + '</pre>';
+    box.appendChild(det);
+  }
+  box.scrollTop = 1e9;
+}
+async function init() {
+  try {
+    const s = await api('/api/status');
+    $('status').textContent = 'fork ' + (s.fork.ok ? 'block ' + s.fork.block : 'down') + ' · model ' + (s.model ? 'ok' : 'missing') + ' · PRISM ' + (s.prism ? 'on' : 'offline log only');
+    const ws = await api('/api/wallets');
+    for (const w of ws) {
+      const b = document.createElement('button'); b.className = 'ghost';
+      b.textContent = w.label + ' ($' + w.truth_usd.toFixed(2) + ')'; b.title = w.address;
+      b.onclick = () => { currentWallet = w.address; $('input').value = 'What can I claim in wallet ' + w.address + '?'; };
+      $('wallets').appendChild(b);
+    }
+  } catch (e) { $('status').textContent = 'status unavailable'; }
+  await newSession();
+}
+init();
+</script>
+</body>
+</html>
