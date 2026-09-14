@@ -53,6 +53,19 @@ if [ "$needs_build" = "1" ]; then
   .venv/bin/python scripts/build_test_set.py
 fi
 
+# voice: open the tunnel and point the ElevenLabs agent at it, when the keys are present
+if [ -n "${ELEVENLABS_API_KEY:-}" ] && [ -n "${NGROK_AUTHTOKEN:-}" ]; then
+  if pgrep -f "scripts/tunnel.py" >/dev/null; then
+    echo "tunnel already running: $(cat data/public_url.txt 2>/dev/null)"
+  else
+    rm -f data/public_url.txt
+    nohup .venv/bin/python scripts/tunnel.py "${SERVE_PORT:-8000}" > logs/tunnel.log 2>&1 &
+    for i in $(seq 1 40); do sleep 1; [ -f data/public_url.txt ] && break; done
+    echo "tunnel: $(cat data/public_url.txt 2>/dev/null || echo 'did not start, see logs/tunnel.log')"
+  fi
+  .venv/bin/python scripts/setup_voice.py | tail -3 || echo "voice setup failed, the text demo still works"
+fi
+
 echo "--- doctor ---"
 .venv/bin/python -m salvage.cli doctor || true
 echo "--- serving on http://127.0.0.1:8000 ---"

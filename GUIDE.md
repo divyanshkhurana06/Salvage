@@ -117,6 +117,22 @@ The longer version:
 
 Before the demo: start the fork, rebuild the test set, run both evals, and press "Reset fork" in the UI so the claims from rehearsal are undone. Keep the fork process alive; it only needs the upstream RPC while it is fetching state it has not seen.
 
+## Voice: how it works and how to demo it
+
+The voice agent lives on ElevenLabs. It hears the judge, decides which tool to call, and calls this laptop through a tunnel: `POST /api/voice/scan`, `/api/voice/gas`, `/api/voice/claim`. Those endpoints use the same verified v2 tools as the text agent, keyed by the ElevenLabs conversation id, and each call is traced into PRISM as a turn with a tool span under the agent `salvage_voice`. The agent only ever reads the `say` field of a tool result out loud, so it cannot invent a number.
+
+Pieces and the order to start them:
+
+1. `scripts/tunnel.py 8000` in its own terminal. It prints the public url and keeps running. The url changes every time it restarts.
+2. `scripts/setup_voice.py` after every tunnel restart: it points the ElevenLabs tools at the new url (and creates the agent the first time).
+3. `scripts/demo.sh` (or `serve`). The widget appears in the bottom right of the UI when `ELEVENLABS_AGENT_ID` is set.
+
+Demo beat: click the widget, say "what can I claim in wallet both one", hear the amount, say "claim everything worth claiming", hear "collected ... confirmed by the transaction receipts". Then say "what about expired ten" and "claim it": the answer is "skipped, window closed". Spoken wallet names are the cohort and the number: fees eight, both one, airdrop three, expired ten, empty thirteen.
+
+PRISM records two things from a voice call. The tool calls arrive live from this server. The full transcript arrives from ElevenLabs' post call webhook, which `setup_voice.py`'s companion step created (`ELEVENLABS_WEBHOOK_ID` in `.env`) and pointed at PRISM's ElevenLabs connector. For PRISM to accept those deliveries, its Connectors page needs the ElevenLabs API key and the webhook signing secret (`ELEVENLABS_WEBHOOK_SECRET` in `.env`), pasted once by a human.
+
+If the venue internet is bad: the voice path needs it (ElevenLabs runs the conversation), the text UI does not once the fork is warm. Keep the text demo as the primary and the voice as the flourish.
+
 ## Things to say honestly if asked
 
 * The airdrops are deployed by us on the fork. The contract is a standard distributor and the registry format is what real projects publish; nothing about the scanner is specific to our deployment.

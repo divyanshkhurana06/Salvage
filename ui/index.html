@@ -96,6 +96,7 @@
     <div class="tools" id="tools"></div>
   </section>
 </main>
+<div id="voice-agent"></div>
 <script>
 let mode = 'v2', currentWallet = null;
 const sessions = { v1: null, v2: null };
@@ -252,7 +253,13 @@ async function init() {
   layout();
   try {
     const s = await api('/api/status');
-    $('status').textContent = 'fork ' + (s.fork.ok ? 'block ' + s.fork.block : 'down') + ' · model ' + (s.model ? 'ok' : 'missing') + ' · PRISM ' + (s.prism ? 'on' : 'offline log only');
+    $('status').textContent = 'fork ' + (s.fork.ok ? 'block ' + s.fork.block : 'down') + ' · model ' + (s.model ? 'ok' : 'missing') + ' · PRISM ' + (s.prism ? 'on' : 'offline log only') + (s.voice_agent_id ? ' · voice agent on' : '');
+    if (s.voice_agent_id) {
+      // the ElevenLabs voice agent: talks to the user in the browser and calls this server's /api/voice tools
+      const el = document.createElement('elevenlabs-convai'); el.setAttribute('agent-id', s.voice_agent_id);
+      $('voice-agent').appendChild(el);
+      const sc = document.createElement('script'); sc.src = 'https://unpkg.com/@elevenlabs/convai-widget-embed'; sc.async = true; document.body.appendChild(sc);
+    }
     const ws = await api('/api/wallets');
     for (const w of ws) {
       const b = document.createElement('button'); b.className = 'ghost';

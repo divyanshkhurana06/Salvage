@@ -127,6 +127,18 @@ Run the evaluation and print the before and after table:
 
 The fork keeps its state only while it runs. After restarting it, run `build_test_set.py` again.
 
+## Voice (optional)
+
+Salvage can also be spoken to. An ElevenLabs voice agent runs the conversation and calls this server's `/api/voice` tools through a tunnel; the tools are the same verified v2 layer, keyed by the ElevenLabs conversation id, and every tool call is traced into PRISM under the agent `salvage_voice`. Wallets are referred to by short names in speech ("fees eight", "both one") because nobody can say a 40 character address.
+
+```bash
+.venv/bin/python scripts/tunnel.py 8000          # keeps running; writes the public url to data/public_url.txt
+.venv/bin/python scripts/setup_voice.py          # creates or updates the ElevenLabs tools and agent, writes the id to .env
+.venv/bin/python -m salvage.cli serve 8000       # the widget appears in the UI when ELEVENLABS_AGENT_ID is set
+```
+
+Needs `ELEVENLABS_API_KEY` and `NGROK_AUTHTOKEN` in `.env`. The tunnel url changes on every restart, so run `setup_voice.py` again after restarting the tunnel. To have PRISM record the full call transcript as well, point ElevenLabs' post call webhook at PRISM's ElevenLabs connector (see `GUIDE.md`).
+
 ## Project layout
 
 ```
