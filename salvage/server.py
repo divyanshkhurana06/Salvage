@@ -83,6 +83,31 @@ def chat(body: ChatIn) -> dict:
             "latency_ms": turn["latency_ms"], "active_wallet": agent.active_wallet, "session_id": agent.session_id}
 
 
+class CheckIn(BaseModel):
+    session_id: str
+
+
+@app.post("/api/check")
+def check_against_chain(body: CheckIn) -> dict:
+    """Compare what the agent just said with what the verified tools compute for the active wallet."""
+    from .eval.runner import reported_usd
+    from .tools import airdrops, uniswap
+
+    agent = SESSIONS.get(body.session_id)
+    if agent is None:
+        raise HTTPException(404, "unknown session")
+    wallet = agent.active_wallet
+    if not wallet or not agent.turns:
+        return {"available": False}
+    fees = uniswap.scan_fees(wallet)
+    drops = airdrops.scan_airdrops(wallet)
+    truth = round(fees["usd_total"] + drops["usd_total"], 2)
+    reported = reported_usd(agent.turns[-1]["reply"])
+    ok = (reported is None or reported < 1.0) if truth == 0 else (reported is not None and abs(reported - truth) / truth <= 0.05)
+    return {"available": True, "wallet": wallet, "truth_usd": truth, "reported_usd": reported, "ok": ok,
+            "positions_scanned": fees["positions_scanned"], "positions_total": fees["positions_total"]}
+
+
 @app.post("/api/reset_fork")
 def reset_fork() -> dict:
     chain = get_chain()

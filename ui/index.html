@@ -26,6 +26,9 @@
   .msg.user { align-self: flex-end; background: var(--green); color: #fff; }
   .msg.bot { align-self: flex-start; background: var(--tint); }
   .msg.sys { align-self: center; color: var(--muted); font-size: 12px; background: transparent; }
+  .msg.check { align-self: flex-start; font-size: 12px; font-weight: 700; border: 1px solid; }
+  .msg.check.good { color: var(--green); background: var(--tint); border-color: var(--green2); }
+  .msg.check.bad { color: var(--red); background: var(--redTint); border-color: var(--red); }
   .composer { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--line); }
   .composer input { flex: 1; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 14px; }
   button.primary { background: var(--green); color: #fff; border: 0; border-radius: 8px; padding: 10px 14px; font-weight: 700; cursor: pointer; }
@@ -144,8 +147,20 @@ async function send() {
       pending.remove(); add(v, 'bot', t.reply);
       if (t.active_wallet) currentWallet = t.active_wallet;
       renderTools(v, t);
+      checkAgainstChain(v);
     } catch (e) { pending.remove(); add(v, 'sys', 'error: ' + e.message); }
   }));
+}
+async function checkAgainstChain(v) {
+  try {
+    const c = await api('/api/check', {session_id: sessions[v]});
+    if (!c.available) return;
+    const d = document.createElement('div');
+    d.className = 'msg check ' + (c.ok ? 'good' : 'bad');
+    const said = c.reported_usd === null ? 'no dollar figure' : '$' + c.reported_usd.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    d.textContent = (c.ok ? 'Matches the chain. ' : 'Does not match the chain. ') + 'Chain says $' + c.truth_usd.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' claimable, the agent said ' + said + '.';
+    $('chat-' + v).appendChild(d); $('chat-' + v).scrollTop = 1e9;
+  } catch (e) { /* the check is a courtesy, never block the chat */ }
 }
 function renderTools(v, t) {
   const box = $('tools');
