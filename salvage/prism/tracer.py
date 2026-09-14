@@ -56,7 +56,7 @@ class Span:
         out = {
             "span_id": self.span_id, "parent_span_id": parent_span_id, "name": self.name,
             "span_type": self.span_type, "input_text": self.input_text, "output_text": self.output_text,
-            "start_time": self.start_time, "end_time": self.end_time, "duration_ms": self.duration_ms,
+            "start_time": self.start_time, "end_time": self.end_time, "duration_ms": int(self.duration_ms),
             "status": self.status,
         }
         if self.error_message:
@@ -108,8 +108,8 @@ def flatten_messages(messages: list[dict]) -> list[dict]:
 
 
 class Tracer:
-    def __init__(self):
-        self.enabled = settings.prism_enabled
+    def __init__(self, enabled: bool | None = None):
+        self.enabled = settings.prism_enabled if enabled is None else enabled
         self.host = settings.prism_host
         self.project_id = settings.prism_project_id
         self._pt = None
@@ -176,6 +176,9 @@ class Tracer:
             token_count_input=tokens_in, token_count_output=tokens_out, trace_id=trace_id,
             agent_id=agent_id, agent_name=agent_name, session_id=session_id, metadata=meta,
         )
+        # the SDK posts on a background thread; wait for it so the trace exists before its spans
+        # arrive under the same trace_id, otherwise the two inserts can collide
+        self._pt.flush(timeout=15)
 
         span_payload = {
             "trace_id": trace_id, "project_id": self.project_id, "session_id": session_id,
@@ -198,12 +201,12 @@ class Tracer:
         for s in spans:
             if s.span_type == "llm":
                 steps.append({"step_type": "reasoning", "label": s.name, "input_summary": s.input_text[:200],
-                              "output_summary": s.output_text[:200], "duration_ms": s.duration_ms,
-                              "token_count": s.token_count_input + s.token_count_output, "status": "success" if s.status == "ok" else "error"})
+                              "output_summary": s.output_text[:200], "duration_ms": int(s.duration_ms),
+                              "token_count": int(s.token_count_input + s.token_count_output), "status": "success" if s.status == "ok" else "error"})
             else:
                 steps.append({"step_type": "tool_call", "label": s.name, "tool_name": s.name.replace("tool:", ""),
                               "input_summary": s.input_text[:200], "output_summary": s.output_text[:200],
-                              "duration_ms": s.duration_ms, "status": "success" if s.status == "ok" else "error"})
+                              "duration_ms": int(s.duration_ms), "status": "success" if s.status == "ok" else "error"})
         steps.append({"step_type": "final_answer", "label": "reply", "output_summary": output_text[:200], "duration_ms": 0})
         try:
             self._pt.submit_trajectory(steps, agent_name=agent_name, agent_id=agent_id, conversation_id=session_id,

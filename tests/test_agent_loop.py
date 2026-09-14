@@ -33,8 +33,8 @@ def test_two_turns_with_tools_and_offline_tracing(tmp_path, monkeypatch):
     import salvage.prism.tracer as tracer_mod
 
     monkeypatch.setattr(tracer_mod, "OFFLINE_LOG", tmp_path / "offline.jsonl")
-    tracer = Tracer()
-    assert tracer.enabled is False  # tests never talk to PRISM
+    tracer = Tracer(enabled=False)  # tests never talk to PRISM
+    assert tracer.enabled is False
 
     state = {"active_wallet": None}
     agent = Agent("v2", llm=ScriptedLLM(script), executors=fake_executors(state), tracer=tracer, session_id="test_session")
@@ -61,7 +61,7 @@ def test_unknown_tool_is_reported_as_error_not_crash():
                               raw_content=[{"type": "tool_use", "id": "x", "name": "nope", "input": {}}])
         return ModelReply(text="I could not do that.", tool_calls=[], stop_reason="end_turn")
 
-    agent = Agent("v1", llm=ScriptedLLM(script_bad), executors={}, tracer=Tracer(), session_id="test_err")
+    agent = Agent("v1", llm=ScriptedLLM(script_bad), executors={}, tracer=Tracer(enabled=False), session_id="test_err")
     t = agent.chat("hi")
     assert t["tool_calls"][0]["error"] is True
     assert t["reply"] == "I could not do that."
