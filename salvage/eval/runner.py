@@ -25,7 +25,14 @@ from ..agent.loop import Agent
 from ..chain import Chain, get_chain
 from ..config import DATA_DIR, RUNS_DIR
 
-MONEY = re.compile(r"\$\s?([0-9][0-9,]*(?:\.[0-9]+)?)")
+MONEY = re.compile(r"\$\s?([0-9][0-9,]*(?:\.[0-9]+)?)\s?(million|thousand|billion|[kmbKMB])?(?![0-9a-zA-Z])")
+SUFFIX = {"k": 1e3, "thousand": 1e3, "m": 1e6, "million": 1e6, "b": 1e9, "billion": 1e9}
+
+
+def money_value(m: "re.Match[str]") -> float:
+    value = float(m.group(1).replace(",", ""))
+    suffix = (m.group(2) or "").lower()
+    return value * SUFFIX.get(suffix, 1.0)
 NOTHING = re.compile(r"nothing (left |else )?(to claim|claimable|you can claim|worth claiming)|no (unclaimed|claimable) (value|funds|assets|fees|rewards)|\$0\.00 (claimable|to claim)", re.I)
 SUCCESS_WORDS = re.compile(r"\b(claimed|collected|done|success|successfully|completed|secured|sent to your wallet|now in your wallet|in your wallet)\b|✅|\b0x?[0-9a-f]{64}\b", re.I)
 FAILURE_WORDS = re.compile(r"already (been )?claimed|previously claimed|nothing (left )?(to claim|claimable|worth claiming)|not claimable|did not go through|didn't go through|window (is |has )?closed|\brevert|\bfailed|could not|couldn't|unable|cannot be claimed|can't be claimed", re.I)
@@ -57,11 +64,11 @@ def reported_usd(text: str) -> float | None:
             # a figure is a gas estimate when "gas" precedes it with no other dollar figure in between,
             # or when it is the upper end of a range that started with a gas figure ("$0.50 to $2.00")
             between = before[gas_at:] if gas_at >= 0 else ""
-            range_tail = gas_at >= 0 and bool(re.search(r"\$\s?[0-9][0-9,.]*\s*(?:–|—|-|to)\s*$", between))
+            range_tail = gas_at >= 0 and bool(re.search(r"\$\s?[0-9][0-9,.]*[kmbKMB]?\s*(?:–|—|-|to)\s*$", between))
             is_gas = (gas_at >= 0 and "$" not in between) or range_tail or "gas" in after
             if is_gas or excluded_line:
                 continue
-            values.append(float(m.group(1).replace(",", "")))
+            values.append(money_value(m))
     if values:
         return max(values)
     if NOTHING.search(text):

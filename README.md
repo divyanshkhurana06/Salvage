@@ -52,8 +52,8 @@ That is how the raw number the tool returned and the number the agent reported e
 |---|---|---|
 | Wallets scored | 28 | 28 |
 | Reported value within 5% of the chain | 39.3% | 96.4% |
-| Mean absolute error (USD) | $685,745.38 | $0.08 |
-| Largest error (USD) | $16,658,289.00 | $2.19 |
+| Mean absolute error (USD) | $11,504,402.99 | $0.08 |
+| Largest error (USD) | $302,999,691.86 | $2.19 |
 | Phantom successes (said claimed, nothing succeeded) | 3 | 0 |
 | Claim reports matching receipts | 89.3% | 100.0% |
 

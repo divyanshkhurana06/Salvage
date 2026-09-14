@@ -13,6 +13,8 @@ def test_reported_usd_takes_the_grand_total():
     assert reported_usd("**Total: ~$7,082**\n- 6,859 USDC ($6,859)") == 7082.0
     assert reported_usd("Your wallet has **$152.48** in claimable assets:\n- Position #1: 6.86 USDC ($6.86), total $15.50") == 152.48
     assert reported_usd("$1,234,567 unclaimed") == 1234567.0
+    assert reported_usd("210 WBTC ≈ $16.3M and 340,229 USDC ≈ $340K") == 16_300_000.0
+    assert reported_usd("roughly $2 million in fees") == 2_000_000.0
 
 
 def test_reported_usd_treats_nothing_to_claim_as_zero_and_ignores_gas():
