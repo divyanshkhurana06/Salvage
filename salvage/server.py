@@ -112,8 +112,30 @@ def check_against_chain(body: CheckIn) -> dict:
             "positions_scanned": fees["positions_scanned"], "positions_total": fees["positions_total"]}
 
 
+class ShockIn(BaseModel):
+    factor: float = 0.6  # 0.6 means ETH and BTC lose 40 percent
+
+
+@app.post("/api/shock")
+def market_shock(body: ShockIn) -> dict:
+    """Simulated black swan: ETH and BTC prices move by the factor for every scan from now on.
+    The naive agent keeps answering from what it read before the move; the verified agent scans again."""
+    from .contracts import PRICED_TOKENS
+    from .tools import pricing
+
+    if body.factor == 1.0:
+        pricing.SHOCK.clear()
+    else:
+        for sym in ("WETH", "WBTC"):
+            pricing.SHOCK[PRICED_TOKENS[sym][0].lower()] = body.factor
+    return {"ok": True, "factor": body.factor, "active": bool(pricing.SHOCK)}
+
+
 @app.post("/api/reset_fork")
 def reset_fork() -> dict:
+    from .tools import pricing
+
+    pricing.SHOCK.clear()
     chain = get_chain()
     if BASE_SNAPSHOT["id"] is not None:
         chain.revert(BASE_SNAPSHOT["id"])

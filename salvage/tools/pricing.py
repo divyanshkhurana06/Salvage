@@ -25,12 +25,17 @@ def raw_price(token: str, chain: Chain | None = None) -> dict:
     }
 
 
+# A simulated market shock for the demo: multipliers applied on top of the live Chainlink price,
+# keyed by token address. Empty means no shock. Set through the UI's crash button.
+SHOCK: dict[str, float] = {}
+
+
 def usd_price(token: str, chain: Chain | None = None) -> float | None:
     """The USD price as a float, computed in code. What v2 uses."""
     data = raw_price(token, chain)
     if not data.get("priced"):
         return None
-    return data["answer"] / (10 ** data["feed_decimals"])
+    return data["answer"] / (10 ** data["feed_decimals"]) * SHOCK.get(token.lower(), 1.0)
 
 
 def to_units(amount_raw: int, decimals: int) -> float:

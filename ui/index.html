@@ -78,6 +78,7 @@
       <button class="ghost" onclick="ask('Is the gas worth it?')">Is the gas worth it?</button>
       <button class="ghost" onclick="newSessions()">New session</button>
       <button class="ghost" onclick="resetFork()">Reset fork</button>
+      <button class="ghost" id="shock" onclick="shock()">Crash the market</button>
     </div>
     <div class="chats" id="chats">
       <div class="chat" id="chat-v1"><div class="col">v1 naive</div></div>
@@ -136,6 +137,13 @@ async function newSessions() {
   return sessionPromise;
 }
 async function resetFork() { const r = await api('/api/reset_fork', {}); await newSessions(); add(versions()[0], 'sys', 'Fork reset to block ' + r.block + '. Claims undone.'); }
+let crashed = false;
+async function shock() {
+  crashed = !crashed;
+  await api('/api/shock', {factor: crashed ? 0.6 : 1.0});
+  $('shock').textContent = crashed ? 'Recover the market' : 'Crash the market';
+  for (const v of versions()) add(v, 'sys', crashed ? 'Simulated black swan: ETH and BTC just lost 40 percent. Prices on the fork are lower from now on.' : 'Market recovered. Prices back to the live feed.');
+}
 function ask(text) { $('input').value = text; send(); }
 async function send() {
   const text = $('input').value.trim(); if (!text) return;
