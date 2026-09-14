@@ -48,35 +48,37 @@ That is how the raw number the tool returned and the number the agent reported e
 
 28 wallets, two turns each ("What can I claim in wallet X?" then "Claim everything that is worth claiming."), same wallets and same fork state for both versions. Scored against the chain, not against the model.
 
+Latest run (airdrop amounts spread from $0.19 to $980 so that the gas decision is tested both ways):
+
 | Metric | v1 (naive) | v2 (verified) |
 |---|---|---|
 | Wallets scored | 28 | 28 |
-| Reported value within 5% of the chain | 39.3% | 96.4% |
-| Mean absolute error (USD) | $11,504,402.99 | $0.08 |
-| Largest error (USD) | $302,999,691.86 | $2.19 |
-| Phantom successes (said claimed, nothing succeeded) | 3 | 0 |
-| Claim reports matching receipts | 89.3% | 100.0% |
+| Reported value within 5% of the chain | 28.6% | 92.9% |
+| Mean absolute error (USD) | $5,706,841.98 | $0.01 |
+| Largest error (USD) | $151,999,858.08 | $0.23 |
+| Phantom successes (said claimed, nothing succeeded) | 0 | 0 |
+| Claim reports matching receipts | 100.0% | 100.0% |
 
-| Cohort | v1 value ok | v2 value ok | v1 phantom | v2 phantom |
-|---|---|---|---|---|
-| airdrop | 4/6 | 6/6 | 0 | 0 |
-| both (fees and airdrop) | 0/6 | 6/6 | 0 | 0 |
-| fees | 0/6 | 5/6 | 0 | 0 |
-| claimed_airdrop | 3/3 | 3/3 | 0 | 0 |
-| expired_airdrop | 0/3 | 3/3 | 3 | 0 |
-| empty | 4/4 | 4/4 | 0 | 0 |
+| Cohort | v1 value ok | v2 value ok |
+|---|---|---|
+| airdrop | 0/6 | 5/6 |
+| both (fees and airdrop) | 0/6 | 6/6 |
+| fees | 0/6 | 5/6 |
+| claimed_airdrop | 3/3 | 3/3 |
+| expired_airdrop | 1/3 | 3/3 |
+| empty | 4/4 | 4/4 |
 
-Every session of both runs is in PRISM (agents `salvage_v1` and `salvage_v2`, one session per wallet, named like `v1_fees_08_<run id>`).
+The model is not deterministic, so v1's failure rate moves between runs. In the earlier traced run on the same wallets v1 was within 5% on 39.3% of wallets and produced 3 phantom successes (it said "Claimed!" with a transaction hash on all three expired airdrops, and every one of those transactions reverted); v2 was at 96.4% with none. Both runs are in PRISM (agents `salvage_v1` and `salvage_v2`, one session per wallet, named like `v1_fees_08_<run id>`), and `EVIDENCE.md` lists every session.
 
-What v1 actually said on a wallet whose fees are worth $0.50 (the contract returned `210` for WBTC, which has 8 decimals, and `340229` for USDC, which has 6):
+What v1 actually said on a wallet worth $141.92 (the contract returned `1952` for WBTC, which has 8 decimals, and `3424643` for USDC, which has 6):
 
-> WBTC 210 at $77,705.05 = $16,318,060.50. USDC 340,229 at $1.00 = $340,229.00. TOTAL $16,658,289.50. You have over $16.6 million in uncollected LP fees waiting for you!
+> Uniswap v3 LP Fees, Position #1364980 (WBTC/USDC): 1,952 WBTC (~$152M), 3,424,643 USDC (~$3.4M)
 
-And on a wallet whose airdrop window had closed, after its claim transaction reverted:
+And on a wallet whose airdrop window had closed, after its claim transaction reverted (earlier run):
 
 > Claimed! Season 0 rewards: 250,000 USDC (~$250,000 USD). Transaction: 0xe549cc51… Your USDC is now yours. Check your wallet to confirm the transfer!
 
-v2 on the same wallets: "$0.50 in fees, the estimated gas cost is $0.40, borderline whether it is worth collecting", and "the claim did not go through: window closed". v2's one miss is a reply that stated the net after gas ($1.79) instead of the $2.19 it could claim.
+v2 on the same wallets: "$141.92 claimable: 0.000020 WBTC ($1.52) and 3.424643 USDC ($3.42) in fees, 137 USDC ($136.98) airdrop", and "the claim did not go through: window closed". v2's two misses are replies that stated the net after gas instead of the gross amount (for example $0.08 net on a $0.31 airdrop with $0.23 gas).
 
 Reproduce with `eval v1`, `eval v2`, `report`; `rescore` re-applies the scoring rules to saved runs without spending model calls.
 
