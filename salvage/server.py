@@ -103,18 +103,38 @@ def check_against_chain(body: CheckIn) -> dict:
     wallet = agent.active_wallet
     if not wallet or not agent.turns:
         return {"available": False}
+    from .eval.runner import FAILURE_WORDS, SUCCESS_WORDS, tx_outcomes
+
     last = agent.turns[-1]
-    # only judge turns where the agent scanned the wallet, because those are the replies that report
-    # claimable value. A gas question or a claim confirmation has nothing to compare against.
-    if not any(c["name"] == "scan_wallet" for c in last["tool_calls"]):
+    names = [c["name"] for c in last["tool_calls"]]
+
+    # a claim turn is judged by its receipts: did the transactions the agent reported actually succeed
+    if any(n in ("collect_fees", "claim_airdrop") for n in names):
+        outcomes = tx_outcomes(last, get_chain())
+        any_success = any(o["status"] == "success" for o in outcomes)
+        positive, negative = bool(SUCCESS_WORDS.search(last["reply"])), bool(FAILURE_WORDS.search(last["reply"]))
+        received = round(sum((o.get("usd_received") or 0.0) for o in outcomes), 2)
+        summary = ", ".join(f"{o['tool']} {o['status']}" for o in outcomes)
+        if positive and not negative and not any_success:
+            return {"available": True, "kind": "receipts", "ok": False,
+                    "text": f"Does not match the receipts. The agent said it claimed, but every transaction failed: {summary}."}
+        if not positive and any_success:
+            return {"available": True, "kind": "receipts", "ok": False,
+                    "text": f"Does not match the receipts. A transaction succeeded ({summary}) but the agent did not report it."}
+        text = f"Matches the receipts: {summary}" + (f", ${received:,.2f} received." if received else ".")
+        return {"available": True, "kind": "receipts", "ok": True, "text": text}
+
+    # a scan turn is judged by value: does the reported total match what the chain says is claimable
+    if "scan_wallet" not in names:
         return {"available": False}
     fees = uniswap.scan_fees(wallet)
     drops = airdrops.scan_airdrops(wallet)
     truth = round(fees["usd_total"] + drops["usd_total"], 2)
-    reported = reported_usd(agent.turns[-1]["reply"])
+    reported = reported_usd(last["reply"])
     ok = (reported is None or reported < 1.0) if truth == 0 else (reported is not None and abs(reported - truth) / truth <= 0.05)
-    return {"available": True, "wallet": wallet, "truth_usd": truth, "reported_usd": reported, "ok": ok,
-            "positions_scanned": fees["positions_scanned"], "positions_total": fees["positions_total"]}
+    said = "no dollar figure" if reported is None else f"${reported:,.2f}"
+    text = ("Matches the chain. " if ok else "Does not match the chain. ") + f"Chain says ${truth:,.2f} claimable, the agent said {said}."
+    return {"available": True, "kind": "value", "ok": ok, "text": text, "wallet": wallet, "truth_usd": truth, "reported_usd": reported}
 
 
 class ShockIn(BaseModel):

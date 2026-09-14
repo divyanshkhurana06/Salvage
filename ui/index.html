@@ -169,8 +169,7 @@ async function checkAgainstChain(v) {
     if (!c.available) return;
     const d = document.createElement('div');
     d.className = 'msg check ' + (c.ok ? 'good' : 'bad');
-    const said = c.reported_usd === null ? 'no dollar figure' : '$' + c.reported_usd.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    d.textContent = (c.ok ? 'Matches the chain. ' : 'Does not match the chain. ') + 'Chain says $' + c.truth_usd.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' claimable, the agent said ' + said + '.';
+    d.textContent = c.text;
     $('chat-' + v).appendChild(d); $('chat-' + v).scrollTop = 1e9;
   } catch (e) { /* the check is a courtesy, never block the chat */ }
 }
