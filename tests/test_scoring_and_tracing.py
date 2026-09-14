@@ -21,6 +21,7 @@ def test_reported_usd_treats_nothing_to_claim_as_zero_and_ignores_gas():
     assert reported_usd("You can claim 0.04 USDC ($0.04).\nEstimated gas: $0.41, so it is not worth it.") == 0.04
     assert reported_usd("The gas cost to collect is estimated at **$0.40**, which is more than the $0.50 you would receive.") == 0.50
     assert reported_usd("The estimated gas cost to collect these fees is **$0.4**, which is higher than the $0.08 in uncollected fees.") == 0.08
+    assert reported_usd("You have **$0.26** available.\nNote that the gas cost for a single collection is typically around $0.50–$2.00+ depending on network conditions.") == 0.26
 
 
 def test_already_claimed_is_not_a_success_statement():

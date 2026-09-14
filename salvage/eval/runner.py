@@ -54,8 +54,11 @@ def reported_usd(text: str) -> float | None:
             before = line[max(0, m.start() - 80):m.start()].lower()
             after = line[m.end():m.end() + 20].lower()
             gas_at = before.rfind("gas")
-            # a figure is a gas estimate when "gas" precedes it with no other dollar figure in between
-            is_gas = (gas_at >= 0 and "$" not in before[gas_at:]) or "gas" in after
+            # a figure is a gas estimate when "gas" precedes it with no other dollar figure in between,
+            # or when it is the upper end of a range that started with a gas figure ("$0.50 to $2.00")
+            between = before[gas_at:] if gas_at >= 0 else ""
+            range_tail = gas_at >= 0 and bool(re.search(r"\$\s?[0-9][0-9,.]*\s*(?:–|—|-|to)\s*$", between))
+            is_gas = (gas_at >= 0 and "$" not in between) or range_tail or "gas" in after
             if is_gas or excluded_line:
                 continue
             values.append(float(m.group(1).replace(",", "")))

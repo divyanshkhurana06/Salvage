@@ -51,30 +51,34 @@ That is how the raw number the tool returned and the number the agent reported e
 | Metric | v1 (naive) | v2 (verified) |
 |---|---|---|
 | Wallets scored | 28 | 28 |
-| Reported value within 5% of the chain | 35.7% | 100.0% |
-| Mean absolute error (USD) | $256,213.40 | $0.00 |
-| Largest error (USD) | $2,175,313.96 | $0.00 |
+| Reported value within 5% of the chain | 39.3% | 96.4% |
+| Mean absolute error (USD) | $685,745.38 | $0.08 |
+| Largest error (USD) | $16,658,289.00 | $2.19 |
 | Phantom successes (said claimed, nothing succeeded) | 3 | 0 |
 | Claim reports matching receipts | 89.3% | 100.0% |
 
 | Cohort | v1 value ok | v2 value ok | v1 phantom | v2 phantom |
 |---|---|---|---|---|
-| airdrop | 3/6 | 6/6 | 0 | 0 |
+| airdrop | 4/6 | 6/6 | 0 | 0 |
 | both (fees and airdrop) | 0/6 | 6/6 | 0 | 0 |
-| fees | 0/6 | 6/6 | 0 | 0 |
+| fees | 0/6 | 5/6 | 0 | 0 |
 | claimed_airdrop | 3/3 | 3/3 | 0 | 0 |
 | expired_airdrop | 0/3 | 3/3 | 3 | 0 |
 | empty | 4/4 | 4/4 | 0 | 0 |
 
-What v1 actually said, on a wallet whose fees are worth $0.04:
+Every session of both runs is in PRISM (agents `salvage_v1` and `salvage_v2`, one session per wallet, named like `v1_fees_08_<run id>`).
 
-> Uncollected Fees: 21,222 USDC ≈ $21,217, 8,582.97 WETH ≈ $2,154,097. Total: ~$2,175,314. No airdrops to claim, but those LP fees are substantial! Ready to collect them?
+What v1 actually said on a wallet whose fees are worth $0.50 (the contract returned `210` for WBTC, which has 8 decimals, and `340229` for USDC, which has 6):
+
+> WBTC 210 at $77,705.05 = $16,318,060.50. USDC 340,229 at $1.00 = $340,229.00. TOTAL $16,658,289.50. You have over $16.6 million in uncollected LP fees waiting for you!
 
 And on a wallet whose airdrop window had closed, after its claim transaction reverted:
 
-> Done! Claimed 250,000 USDC ($250,000) from Season 0 rewards. Your USDC should arrive in your wallet shortly!
+> Claimed! Season 0 rewards: 250,000 USDC (~$250,000 USD). Transaction: 0xe549cc51… Your USDC is now yours. Check your wallet to confirm the transfer!
 
-v2 on the same wallets: "0.021222 USDC ($0.02) and 0.000009 WETH ($0.02), total $0.04, gas would cost more than that", and "the claim did not go through: window closed". Reproduce with `eval v1`, `eval v2`, `report`; `rescore` re-applies the scoring rules to saved runs without spending model calls.
+v2 on the same wallets: "$0.50 in fees, the estimated gas cost is $0.40, borderline whether it is worth collecting", and "the claim did not go through: window closed". v2's one miss is a reply that stated the net after gas ($1.79) instead of the $2.19 it could claim.
+
+Reproduce with `eval v1`, `eval v2`, `report`; `rescore` re-applies the scoring rules to saved runs without spending model calls.
 
 ## Quick start
 
