@@ -1,0 +1,335 @@
+{
+  "block": 25975672,
+  "candidates": [
+    {
+      "token_id": 1365029,
+      "owner": "0x882A709563b1Cbb711fD285ECe751564e56830d5",
+      "token0": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
+      "token1": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+      "fee_tier": 500,
+      "amount0_raw": 68267,
+      "amount1_raw": 85019167,
+      "usd": 138.04
+    },
+    {
+      "token_id": 1249936,
+      "owner": "0x6711179F900d2841C54A738Bd8cdea14dA342B68",
+      "token0": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "token1": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      "fee_tier": 500,
+      "amount0_raw": 6859109,
+      "amount1_raw": 3439869937801605,
+      "usd": 15.5
+    },
+    {
+      "token_id": 1364995,
+      "owner": "0x56E8eB8E159A0D13A2943D9a67fd90CD7766dDdC",
+      "token0": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      "token1": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+      "fee_tier": 3000,
+      "amount0_raw": 1974233174294097,
+      "amount1_raw": 1012404,
+      "usd": 5.97
+    },
+    {
+      "token_id": 1364991,
+      "owner": "0x4799704B15a9853Bbe8a85ed88995c4E4D26c8dA",
+      "token0": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      "token1": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+      "fee_tier": 3000,
+      "amount0_raw": 1368686242071350,
+      "amount1_raw": 2451078,
+      "usd": 5.89
+    },
+    {
+      "token_id": 1364980,
+      "owner": "0x625824376Be84DE62e6826d498e261e9980cBF99",
+      "token0": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
+      "token1": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "fee_tier": 3000,
+      "amount0_raw": 1952,
+      "amount1_raw": 3424643,
+      "usd": 4.94
+    },
+    {
+      "token_id": 1364906,
+      "owner": "0x57F8B8A0C6B1c84797e9f7A91CB6CD9628504b97",
+      "token0": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      "token1": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+      "fee_tier": 3000,
+      "amount0_raw": 801134068969591,
+      "amount1_raw": 2880345,
+      "usd": 4.89
+    },
+    {
+      "token_id": 1364927,
+      "owner": "0x502DEa9e35a87F65F534C330f8e74bf145D0724e",
+      "token0": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
+      "token1": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+      "fee_tier": 500,
+      "amount0_raw": 1996,
+      "amount1_raw": 1546276,
+      "usd": 3.1
+    },
+    {
+      "token_id": 1364959,
+      "owner": "0x4C44Fe4732a9a6E5A641191E1eE1Be29136ddCbE",
+      "token0": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "token1": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      "fee_tier": 100,
+      "amount0_raw": 1494166,
+      "amount1_raw": 597533382696603,
+      "usd": 2.99
+    },
+    {
+      "token_id": 1364996,
+      "owner": "0x34fc62102AC6b1cD026B432E742a53ce3CaC0509",
+      "token0": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      "token1": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+      "fee_tier": 3000,
+      "amount0_raw": 800121301459690,
+      "amount1_raw": 971520,
+      "usd": 2.98
+    },
+    {
+      "token_id": 1365013,
+      "owner": "0x00c64D852BE14106b3c673186BcD838DC5699928",
+      "token0": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
+      "token1": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "fee_tier": 3000,
+      "amount0_raw": 1628,
+      "amount1_raw": 1270992,
+      "usd": 2.54
+    },
+    {
+      "token_id": 1365019,
+      "owner": "0xffa0557CD4653106A245c5a0386e5979A229A2e1",
+      "token0": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      "token1": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+      "fee_tier": 3000,
+      "amount0_raw": 909079167320662,
+      "amount1_raw": 310,
+      "usd": 2.28
+    },
+    {
+      "token_id": 1364954,
+      "owner": "0x57c1DeE25aD30019c580CEf0Fd7C7a5274a8B5d4",
+      "token0": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      "token1": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+      "fee_tier": 3000,
+      "amount0_raw": 456687844572582,
+      "amount1_raw": 1046834,
+      "usd": 2.19
+    },
+    {
+      "token_id": 1365000,
+      "owner": "0x1085C42a2698c4f89251b7c27dbd5cE95CAae38B",
+      "token0": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "token1": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      "fee_tier": 3000,
+      "amount0_raw": 273533,
+      "amount1_raw": 238080923212656,
+      "usd": 0.87
+    },
+    {
+      "token_id": 1364999,
+      "owner": "0x1085C42a2698c4f89251b7c27dbd5cE95CAae38B",
+      "token0": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      "token1": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+      "fee_tier": 3000,
+      "amount0_raw": 228822358451738,
+      "amount1_raw": 277859,
+      "usd": 0.85
+    },
+    {
+      "token_id": 1365022,
+      "owner": "0xEd80A3cA35aad90a317D4C11a536b13d4D4BC077",
+      "token0": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      "token1": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+      "fee_tier": 3000,
+      "amount0_raw": 312771805255532,
+      "amount1_raw": 113,
+      "usd": 0.79
+    },
+    {
+      "token_id": 1364917,
+      "owner": "0x2ACf96Fa7270867d8E04A20C5968a268CCf09d94",
+      "token0": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
+      "token1": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "fee_tier": 3000,
+      "amount0_raw": 210,
+      "amount1_raw": 340229,
+      "usd": 0.5
+    },
+    {
+      "token_id": 1364933,
+      "owner": "0xeD0dc7475c14792A433668951c3769c768338bb7",
+      "token0": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "token1": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      "fee_tier": 3000,
+      "amount0_raw": 191782,
+      "amount1_raw": 70370877346988,
+      "usd": 0.37
+    },
+    {
+      "token_id": 1364972,
+      "owner": "0xAaf2d357C0bdCb5F1414356e762A76FAEEe75a3e",
+      "token0": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "token1": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      "fee_tier": 3000,
+      "amount0_raw": 122606,
+      "amount1_raw": 54806659443559,
+      "usd": 0.26
+    },
+    {
+      "token_id": 1364981,
+      "owner": "0xeE71321045E2278D8995300f41C0Aa7bE8d08918",
+      "token0": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "token1": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      "fee_tier": 3000,
+      "amount0_raw": 100679,
+      "amount1_raw": 54624493930544,
+      "usd": 0.24
+    },
+    {
+      "token_id": 1364962,
+      "owner": "0xe019A28CbB6bEdFfBcbC137187b80bb5A551D1A7",
+      "token0": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
+      "token1": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+      "fee_tier": 3000,
+      "amount0_raw": 34,
+      "amount1_raw": 62530,
+      "usd": 0.09
+    },
+    {
+      "token_id": 1364993,
+      "owner": "0x1D899a8eCBA165c181Db933e3B82205b23E58c0D",
+      "token0": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      "token1": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+      "fee_tier": 3000,
+      "amount0_raw": 19474890865190,
+      "amount1_raw": 30917,
+      "usd": 0.08
+    },
+    {
+      "token_id": 1364913,
+      "owner": "0xCe88eD0869b108B834d69bd7bEa5be5619d715Ac",
+      "token0": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "token1": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      "fee_tier": 500,
+      "amount0_raw": 21222,
+      "amount1_raw": 8582966707028,
+      "usd": 0.04
+    },
+    {
+      "token_id": 1249931,
+      "owner": "0xfb27F8d05FF1DC695628B66FacCd538F97E62de4",
+      "token0": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "token1": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      "fee_tier": 3000,
+      "amount0_raw": 11274,
+      "amount1_raw": 5616839031593,
+      "usd": 0.03
+    },
+    {
+      "token_id": 1249928,
+      "owner": "0xfb27F8d05FF1DC695628B66FacCd538F97E62de4",
+      "token0": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "token1": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      "fee_tier": 3000,
+      "amount0_raw": 11270,
+      "amount1_raw": 5615165821327,
+      "usd": 0.03
+    },
+    {
+      "token_id": 1364924,
+      "owner": "0xc5BF57d85ce2172adD045301495a84a4fc667299",
+      "token0": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "token1": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      "fee_tier": 100,
+      "amount0_raw": 2861,
+      "amount1_raw": 1132594059275,
+      "usd": 0.01
+    },
+    {
+      "token_id": 1365044,
+      "owner": "0x72295135eCC54502F5D5f5Ee86717249bE6BE058",
+      "token0": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      "token1": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+      "fee_tier": 3000,
+      "amount0_raw": 52366470480,
+      "amount1_raw": 84,
+      "usd": 0.0
+    },
+    {
+      "token_id": 1365041,
+      "owner": "0xD5cdF8F78A285c100131b4dDC00F6bBDdce7A532",
+      "token0": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
+      "token1": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      "fee_tier": 500,
+      "amount0_raw": 0,
+      "amount1_raw": 802127353153,
+      "usd": 0.0
+    },
+    {
+      "token_id": 1365027,
+      "owner": "0xAcc75Fe0Ad3BB3B4D70Ab36589113b110e9a45C9",
+      "token0": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
+      "token1": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+      "fee_tier": 3000,
+      "amount0_raw": 2,
+      "amount1_raw": 0,
+      "usd": 0.0
+    },
+    {
+      "token_id": 1364998,
+      "owner": "0x95E59a5AC417ffd7448650c1B5E3f9af3b4635F0",
+      "token0": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+      "token1": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "fee_tier": 100,
+      "amount0_raw": 176495613990,
+      "amount1_raw": 0,
+      "usd": 0.0
+    },
+    {
+      "token_id": 1364997,
+      "owner": "0x95E59a5AC417ffd7448650c1B5E3f9af3b4635F0",
+      "token0": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+      "token1": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+      "fee_tier": 100,
+      "amount0_raw": 6148215854695,
+      "amount1_raw": 5,
+      "usd": 0.0
+    },
+    {
+      "token_id": 1364961,
+      "owner": "0xEa295458Fc25FD531530C108E7007395CDc62c6b",
+      "token0": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      "token1": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+      "fee_tier": 3000,
+      "amount0_raw": 615205112,
+      "amount1_raw": 1,
+      "usd": 0.0
+    },
+    {
+      "token_id": 1364942,
+      "owner": "0x14A20392A1d61Cd6f29013a1A02b61E0Fcd98DD1",
+      "token0": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      "token1": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+      "fee_tier": 3000,
+      "amount0_raw": 32757271636,
+      "amount1_raw": 60,
+      "usd": 0.0
+    },
+    {
+      "token_id": 1364914,
+      "owner": "0x1025Ca9Bc56760a73b2188B95778945E2c87C1a7",
+      "token0": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      "token1": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+      "fee_tier": 3000,
+      "amount0_raw": 13549855206,
+      "amount1_raw": 37,
+      "usd": 0.0
+    }
+  ]
+}
