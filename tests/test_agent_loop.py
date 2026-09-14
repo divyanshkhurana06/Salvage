@@ -13,7 +13,7 @@ def fake_executors(state: dict):
     def collect(token_id: int):
         return {"status": "success", "usd_received": 12.5, "received": []}
 
-    return {"scan_wallet": scan, "collect_fees": collect, "estimate_gas_cost": lambda kind: {"usd": 1.1}, "claim_airdrop": lambda distributor: {"status": "reverted"}}
+    return {"scan_wallet": scan, "collect_fees": collect, "estimate_gas_cost": lambda: {"collect_gas_usd": 0.4, "airdrop_gas_usd": 0.2, "actions": []}, "claim_airdrop": lambda distributor: {"status": "reverted"}}
 
 
 def script(messages, tools):

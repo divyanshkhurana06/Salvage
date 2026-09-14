@@ -128,9 +128,13 @@ def scan(body: ScanIn) -> dict:
 def gas(body: ClaimIn) -> dict:
     clock = SpanClock()
     ex = _executors(body.conversation_id)
-    c, a = ex["estimate_gas_cost"]("collect"), ex["estimate_gas_cost"]("airdrop")
-    spoken = f"Collecting fees costs about {_dollars(c['usd'])} in gas, and claiming an airdrop about {_dollars(a['usd'])}."
-    out = {"ok": True, "collect_usd": c["usd"], "airdrop_usd": a["usd"], "say": spoken}
+    g = ex["estimate_gas_cost"]()
+    if g.get("actions"):
+        spoken = "; ".join(f"{a['action']} is worth {_dollars(a['value_usd'])} and costs {_dollars(a['gas_usd'])} in gas, net {_dollars(a['net_usd'])}" for a in g["actions"])
+        spoken += f". In total {_dollars(g['total_value_usd'])} of value for {_dollars(g['total_gas_usd'])} of gas, net {_dollars(g['total_net_usd'])}."
+    else:
+        spoken = f"Collecting fees costs about {_dollars(g['collect_gas_usd'])} in gas, and claiming an airdrop about {_dollars(g['airdrop_gas_usd'])}. Scan a wallet first for a full breakdown."
+    out = {"ok": True, **g, "say": spoken}
     _trace(body.conversation_id, "estimate_gas_cost", {}, out, spoken, clock)
     return out
 
@@ -145,8 +149,8 @@ def claim(body: ClaimIn) -> dict:
         return {"ok": False, "say": "Scan a wallet first, then I can claim for it."}
     ex = _executors(body.conversation_id)
     scan_result = ex["scan_wallet"](address)
-    gas_usd = ex["estimate_gas_cost"]("collect")["usd"]
-    airdrop_gas_usd = ex["estimate_gas_cost"]("airdrop")["usd"]
+    g = ex["estimate_gas_cost"]()
+    gas_usd, airdrop_gas_usd = g["collect_gas_usd"], g["airdrop_gas_usd"]
     said, received, skipped = [], 0.0, []
     for p in scan_result["uniswap"]["positions"]:
         if p["usd_total"] <= gas_usd:

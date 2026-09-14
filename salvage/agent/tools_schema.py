@@ -45,8 +45,8 @@ V2_TOOLS = [
     },
     {
         "name": "estimate_gas_cost",
-        "description": "Estimate the USD gas cost of one collect or one airdrop claim at the current network fee.",
-        "input_schema": {"type": "object", "properties": {"kind": {"type": "string", "enum": ["collect", "airdrop"]}}, "required": ["kind"]},
+        "description": "Gas costs for everything claimable in the last scanned wallet, at the current network fee: one line per action (each fee collection, each airdrop claim) with its value, its gas, and the net, plus totals. Call this whenever the user asks about gas or whether claiming is worth it.",
+        "input_schema": {"type": "object", "properties": {}, "required": []},
     },
     {
         "name": "collect_fees",
@@ -108,9 +108,31 @@ class Executors:
         drops = airdrops.scan_airdrops(address, self.chain)
         return {"uniswap": fees, "airdrops": drops, "usd_total": round(fees["usd_total"] + drops["usd_total"], 2), "summary": _summary(fees, drops)}
 
-    def v2_gas(self, kind: str) -> dict:
-        gas = 160_000 if kind == "collect" else 90_000
-        return {"kind": kind, "estimated_gas": gas, "usd": round(claims.gas_cost_usd(gas, self.chain), 2)}
+    def v2_gas(self, kind: str | None = None) -> dict:
+        """Gas for every pending action on the active wallet, so the model always sees the whole picture."""
+        collect_usd = round(claims.gas_cost_usd(160_000, self.chain), 2)
+        airdrop_usd = round(claims.gas_cost_usd(90_000, self.chain), 2)
+        out = {"collect_gas_usd": collect_usd, "airdrop_gas_usd": airdrop_usd, "actions": []}
+        owner = self.state.get("active_wallet")
+        if owner:
+            fees = uniswap.scan_fees(owner, self.chain)
+            drops = airdrops.scan_airdrops(owner, self.chain)
+            for p in fees["positions"]:
+                if p["usd_total"] > 0:
+                    out["actions"].append({"action": f"collect fees on position {p['token_id']}", "value_usd": p["usd_total"],
+                                           "gas_usd": collect_usd, "net_usd": round(p["usd_total"] - collect_usd, 2),
+                                           "worth_it": p["usd_total"] > collect_usd})
+            for d in drops["airdrops"]:
+                if d["claimable"] and d["usd"] is not None:
+                    out["actions"].append({"action": f"claim airdrop {d['name']}", "value_usd": round(d["usd"], 2),
+                                           "gas_usd": airdrop_usd, "net_usd": round(d["usd"] - airdrop_usd, 2),
+                                           "worth_it": d["usd"] > airdrop_usd})
+            out["total_value_usd"] = round(sum(a["value_usd"] for a in out["actions"]), 2)
+            out["total_gas_usd"] = round(sum(a["gas_usd"] for a in out["actions"]), 2)
+            out["total_net_usd"] = round(out["total_value_usd"] - out["total_gas_usd"], 2)
+            out["summary"] = "; ".join(f"{a['action']}: ${a['value_usd']:.2f} value, ${a['gas_usd']:.2f} gas, net ${a['net_usd']:.2f}" for a in out["actions"]) \
+                + (f". Total ${out['total_value_usd']:.2f} value, ${out['total_gas_usd']:.2f} gas, net ${out['total_net_usd']:.2f}." if out["actions"] else "Nothing claimable, so no gas to spend.")
+        return out
 
     def v2_collect(self, token_id: int) -> dict:
         return claims.collect_fees(int(token_id), self._owner(), self.chain)

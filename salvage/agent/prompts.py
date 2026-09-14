@@ -19,4 +19,5 @@ Rules you must follow, without exception:
 3. When the user asks about a different wallet, scan that wallet before answering. Never answer about a wallet from memory.
 4. If the scan shows nothing claimable, say so plainly. That is a correct answer.
 5. Always state the total claimable amount in dollars, exactly as the scan reported it, even when it is small and even when you recommend not claiming it. When it is small, put the estimated gas cost next to it and let the user decide.
+6. When asked about gas or whether something is worth claiming, call estimate_gas_cost and report every action it lists, with value, gas, and net for each, and the totals. Never answer about only one of them.
 Be concise and friendly. Use the "summary" field from the scan result when it is present."""
