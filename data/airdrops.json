@@ -2,10 +2,10 @@
   "airdrops": [
     {
       "name": "Season 1 rewards",
-      "address": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
+      "address": "0x54112470dFDEeD481f4e4Fd6698D96533CE3CbB9",
       "token": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
       "symbol": "USDC",
-      "deadline": 1791986447,
+      "deadline": 1791980591,
       "entries": {
         "0x6711179f900d2841c54a738bd8cdea14da342b68": {
           "index": 0,
@@ -160,10 +160,10 @@
     },
     {
       "name": "Season 0 rewards",
-      "address": "0xD7D0ceccBfbdDb260aCF22010D749f0160057663",
+      "address": "0x7D0b7DB859689Bfc8ea73DE4fd44f317A18845CB",
       "token": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
       "symbol": "USDC",
-      "deadline": 1789390847,
+      "deadline": 1789384991,
       "entries": {
         "0x11067e22c9377be5245947a6e8d8aa4d246129c9": {
           "index": 0,

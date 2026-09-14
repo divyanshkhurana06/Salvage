@@ -1,5 +1,5 @@
 {
-  "block": 25975686,
+  "block": 25975679,
   "wallets": [
     {
       "label": "both_01",
@@ -15,7 +15,7 @@
         ],
         "airdrops": [
           {
-            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
+            "distributor": "0x54112470dFDEeD481f4e4Fd6698D96533CE3CbB9",
             "status": "claimable",
             "usd": 136.97896639
           }
@@ -36,7 +36,7 @@
         ],
         "airdrops": [
           {
-            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
+            "distributor": "0x54112470dFDEeD481f4e4Fd6698D96533CE3CbB9",
             "status": "claimable",
             "usd": 220.0896614456468
           }
@@ -57,7 +57,7 @@
         ],
         "airdrops": [
           {
-            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
+            "distributor": "0x54112470dFDEeD481f4e4Fd6698D96533CE3CbB9",
             "status": "claimable",
             "usd": 303.2003565012936
           }
@@ -78,7 +78,7 @@
         ],
         "airdrops": [
           {
-            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
+            "distributor": "0x54112470dFDEeD481f4e4Fd6698D96533CE3CbB9",
             "status": "claimable",
             "usd": 386.31105155694036
           }
@@ -99,7 +99,7 @@
         ],
         "airdrops": [
           {
-            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
+            "distributor": "0x54112470dFDEeD481f4e4Fd6698D96533CE3CbB9",
             "status": "claimable",
             "usd": 469.4217466125872
           }
@@ -120,7 +120,7 @@
         ],
         "airdrops": [
           {
-            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
+            "distributor": "0x54112470dFDEeD481f4e4Fd6698D96533CE3CbB9",
             "status": "claimable",
             "usd": 552.532441668234
           }
@@ -226,7 +226,7 @@
         "fee_positions": [],
         "airdrops": [
           {
-            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
+            "distributor": "0x54112470dFDEeD481f4e4Fd6698D96533CE3CbB9",
             "status": "claimable",
             "usd": 635.6431367238807
           }
@@ -242,7 +242,7 @@
         "fee_positions": [],
         "airdrops": [
           {
-            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
+            "distributor": "0x54112470dFDEeD481f4e4Fd6698D96533CE3CbB9",
             "status": "claimable",
             "usd": 718.7538317795276
           }
@@ -258,7 +258,7 @@
         "fee_positions": [],
         "airdrops": [
           {
-            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
+            "distributor": "0x54112470dFDEeD481f4e4Fd6698D96533CE3CbB9",
             "status": "claimable",
             "usd": 801.8645268351744
           }
@@ -274,7 +274,7 @@
         "fee_positions": [],
         "airdrops": [
           {
-            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
+            "distributor": "0x54112470dFDEeD481f4e4Fd6698D96533CE3CbB9",
             "status": "claimable",
             "usd": 883.9753754208211
           }
@@ -290,7 +290,7 @@
         "fee_positions": [],
         "airdrops": [
           {
-            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
+            "distributor": "0x54112470dFDEeD481f4e4Fd6698D96533CE3CbB9",
             "status": "claimable",
             "usd": 967.0860704764679
           }
@@ -306,7 +306,7 @@
         "fee_positions": [],
         "airdrops": [
           {
-            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
+            "distributor": "0x54112470dFDEeD481f4e4Fd6698D96533CE3CbB9",
             "status": "claimable",
             "usd": 1050.1967655321148
           }
@@ -322,7 +322,7 @@
         "fee_positions": [],
         "airdrops": [
           {
-            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
+            "distributor": "0x54112470dFDEeD481f4e4Fd6698D96533CE3CbB9",
             "status": "already claimed",
             "usd": 1133.3074605877614
           }
@@ -338,7 +338,7 @@
         "fee_positions": [],
         "airdrops": [
           {
-            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
+            "distributor": "0x54112470dFDEeD481f4e4Fd6698D96533CE3CbB9",
             "status": "already claimed",
             "usd": 1216.4181556434085
           }
@@ -354,7 +354,7 @@
         "fee_positions": [],
         "airdrops": [
           {
-            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
+            "distributor": "0x54112470dFDEeD481f4e4Fd6698D96533CE3CbB9",
             "status": "already claimed",
             "usd": 1299.528850699055
           }
@@ -370,7 +370,7 @@
         "fee_positions": [],
         "airdrops": [
           {
-            "distributor": "0xD7D0ceccBfbdDb260aCF22010D749f0160057663",
+            "distributor": "0x7D0b7DB859689Bfc8ea73DE4fd44f317A18845CB",
             "status": "window closed",
             "usd": 249.96161750000002
           }
@@ -386,7 +386,7 @@
         "fee_positions": [],
         "airdrops": [
           {
-            "distributor": "0xD7D0ceccBfbdDb260aCF22010D749f0160057663",
+            "distributor": "0x7D0b7DB859689Bfc8ea73DE4fd44f317A18845CB",
             "status": "window closed",
             "usd": 309.9524057
           }
@@ -402,7 +402,7 @@
         "fee_positions": [],
         "airdrops": [
           {
-            "distributor": "0xD7D0ceccBfbdDb260aCF22010D749f0160057663",
+            "distributor": "0x7D0b7DB859689Bfc8ea73DE4fd44f317A18845CB",
             "status": "window closed",
             "usd": 369.94319390000004
           }
