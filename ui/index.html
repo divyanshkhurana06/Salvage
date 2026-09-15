@@ -141,7 +141,7 @@ const TOOLS_HEADER = `<details class="changed"><summary>What changed in v2</summ
   <li>The agent scans again before acting; switching wallets resets the conversation state.</li>
   <li>Nothing to claim is a first class answer, with the gas estimate next to small amounts.</li>
 </ul></details>
-<div class="warn">Sources: Uniswap v3 fees on Ethereum and on Base, merkle airdrops on Ethereum. Each turn also carries the chain's verdict into PRISM (metadata chain_check, span check:chain), so the traces that went wrong can be filtered, not hunted.</div>`;
+<div class="warn">Sources: Uniswap v3 fees on Ethereum and on Base, merkle airdrops on Ethereum. Each turn also carries the chain's verdict into PRISM (metadata chain_check, span check:chain:match or mismatch), so the traces that went wrong can be filtered, not hunted.</div>`;
 
 // a public deployment sets an access code; it is asked for once and kept in this browser
 let accessCode = '';
