@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import time
 import uuid
@@ -104,7 +105,9 @@ class Agent:
 
         turn = {"user": user_text, "reply": text, "tool_calls": tool_calls, "latency_ms": latency_ms,
                 "tokens_in": tokens_in, "tokens_out": tokens_out, "check": None}
-        metadata = {**self.metadata, "agent_version": self.version, "user_identifier": self.user_id, "wallet": wallet_after or ""}
+        # prompt_hash lets PRISM tie a failure cluster to the exact prompt version that produced it
+        metadata = {**self.metadata, "agent_version": self.version, "user_identifier": self.user_id, "wallet": wallet_after or "",
+                    "prompt_hash": hashlib.sha256(self.system.encode()).hexdigest()[:16], "model": self.llm.model_id}
 
         # the chain's verdict on this turn travels with the trace: as metadata, and as a span in the timeline
         check = self._check(turn, wallet_after)

@@ -76,6 +76,7 @@ def test_chain_check_travels_with_the_trace(monkeypatch):
     assert t["check"]["ok"] is False and t["check"]["kind"] == "value"
     meta = recorded[-1]["metadata"]
     assert meta["chain_check"] == "mismatch" and meta["truth_usd"] == 0.08 and meta["reported_usd"] == 4801.0
+    assert len(meta["prompt_hash"]) == 16
     assert recorded[-1]["final_status"] == "success"  # a mismatch is a verdict, not a failed run (failed runs trigger paid analysis)
     check_span = [s for s in recorded[-1]["spans"] if s.name.startswith("check:chain")][0]
     assert check_span.name == "check:chain:mismatch" and check_span.status == "ok" and "Does not match" in check_span.output_text
