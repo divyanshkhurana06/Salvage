@@ -134,17 +134,30 @@ const tally = { v1: {ok: 0, total: 0}, v2: {ok: 0, total: 0} };
 let sessionPromise = null;
 const $ = id => document.getElementById(id);
 const NAMES = { v1: 'v1 naive', v2: 'v2 verified' };
-const COHORTS = [['both', 'fees and airdrop'], ['fees', 'fees only'], ['airdrop', 'airdrop only'], ['claimed_airdrop', 'already claimed'], ['expired_airdrop', 'window closed'], ['empty', 'nothing owed']];
+const COHORTS = [['both', 'fees and airdrop'], ['fees', 'fees only'], ['base_fees', 'fees on Base'], ['airdrop', 'airdrop only'], ['claimed_airdrop', 'already claimed'], ['expired_airdrop', 'window closed'], ['empty', 'nothing owed']];
 const TOOLS_HEADER = `<details class="changed"><summary>What changed in v2</summary><ul>
   <li>Amounts are converted with the token's decimals and priced with Chainlink in code, never by the model.</li>
   <li>Every claim is simulate, execute, read the receipt. The reply is written from the receipt.</li>
   <li>The agent scans again before acting; switching wallets resets the conversation state.</li>
   <li>Nothing to claim is a first class answer, with the gas estimate next to small amounts.</li>
 </ul></details>
-<div class="warn">Sources on this fork: Uniswap v3 fees and merkle airdrops. Each turn also carries the chain's verdict into PRISM (metadata chain_check, span check:chain), so the traces that went wrong can be filtered, not hunted.</div>`;
+<div class="warn">Sources: Uniswap v3 fees on Ethereum and on Base, merkle airdrops on Ethereum. Each turn also carries the chain's verdict into PRISM (metadata chain_check, span check:chain), so the traces that went wrong can be filtered, not hunted.</div>`;
 
+// a public deployment sets an access code; it is asked for once and kept in this browser
+let accessCode = '';
+try { accessCode = localStorage.getItem('salvage_access_code') || ''; } catch (e) {}
+function askAccessCode() {
+  const code = window.prompt('This Salvage deployment needs an access code.');
+  if (code === null) return false;
+  accessCode = code.trim();
+  try { localStorage.setItem('salvage_access_code', accessCode); } catch (e) {}
+  return true;
+}
 async function api(path, body) {
-  const r = await fetch(path, body ? {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)} : {});
+  const headers = {'X-Access-Code': accessCode};
+  if (body) headers['Content-Type'] = 'application/json';
+  let r = await fetch(path, body ? {method: 'POST', headers, body: JSON.stringify(body)} : {headers});
+  if (r.status === 401 && askAccessCode()) return api(path, body);
   if (!r.ok) throw new Error(await r.text());
   return r.json();
 }
@@ -178,7 +191,7 @@ async function newSessions() {
     .then(() => { $('meta').innerHTML = 'PRISM session ' + versions().map(v => '<code>' + sessions[v] + '</code>').join(' ') + ' <span>(one conversation each, agent ids salvage_v1 and salvage_v2)</span>'; });
   return sessionPromise;
 }
-async function resetFork() { const r = await api('/api/reset_fork', {}); await newSessions(); add(versions()[0], 'sys', 'Fork reset to block ' + r.block + '. Claims undone, prices restored.'); crashed = false; $('shock').textContent = 'Crash the market'; loadStatus().catch(() => {}); }
+async function resetFork() { const r = await api('/api/reset_fork', {}); await newSessions(); add(versions()[0], 'sys', 'Forks reset (' + Object.entries(r.blocks || {}).map(([k, v]) => k + ' ' + v).join(', ') + '). Claims undone, prices restored.'); crashed = false; $('shock').textContent = 'Crash the market'; loadStatus().catch(() => {}); }
 let crashed = false;
 async function shock() {
   crashed = !crashed;
@@ -307,8 +320,8 @@ async function toggleResults() {
 }
 async function loadStatus() {
   const s = await api('/api/status');
-  const forkNote = !s.fork.ok ? '<b>down</b>' : 'block ' + s.fork.block + (s.fork.txs_since_build ? ' · <b style="color:var(--red)">' + s.fork.txs_since_build + ' claim' + (s.fork.txs_since_build > 1 ? 's' : '') + ' mined since the wallet set was built, press Reset fork</b>' : ' · clean');
-  $('status').innerHTML = 'fork ' + forkNote + ' · model ' + (s.model ? 'ok' : '<b>missing</b>') + ' · PRISM ' + (s.prism ? 'live' : 'offline log only') + (s.voice_agent_id ? ' · voice agent on' : '') + '<br>Ethereum mainnet fork, real positions, real contracts, test money';
+  const forks = Object.values(s.forks || {}).map(f => !f.ok ? f.label + ' <b>down</b>' : f.label + ' ' + f.block + (f.txs_since_build ? ' <b style="color:var(--red)">(' + f.txs_since_build + ' claim' + (f.txs_since_build > 1 ? 's' : '') + ' since build, press Reset fork)</b>' : ' clean'));
+  $('status').innerHTML = 'forks: ' + (forks.join(' · ') || '<b>none</b>') + ' · model ' + (s.model ? 'ok' : '<b>missing</b>') + ' · PRISM ' + (s.prism ? 'live' : 'offline log only') + (s.voice_agent_id ? ' · voice agent on' : '') + '<br>' + (Object.keys(s.forks || {}).length > 1 ? 'Ethereum and Base forks' : 'Ethereum mainnet fork') + ', real positions, real contracts, test money';
   return s;
 }
 async function init() {
@@ -329,7 +342,7 @@ async function init() {
       const label = document.createElement('label'); label.textContent = title; row.appendChild(label);
       for (const w of group) {
         const b = document.createElement('button'); b.className = 'ghost';
-        b.textContent = w.label.replace('_airdrop', '') + ' · $' + w.truth_usd.toFixed(2); b.title = w.address;
+        b.textContent = w.label.replace('_airdrop', '').replace('_fees', '') + ' · $' + w.truth_usd.toFixed(2); b.title = w.address;
         b.onclick = () => { selectWallet(w.address); $('input').value = 'What can I claim in wallet ' + w.address + '?'; };
         row.appendChild(b);
       }

@@ -111,7 +111,7 @@ def scan(body: ScanIn) -> dict:
     parts = []
     for p in fees["positions"]:
         if p["usd_total"] > 0:
-            parts.append(f"Uniswap fees on position {p['token_id']} worth {_dollars(p['usd_total'])}")
+            parts.append(f"Uniswap fees on position {p['token_id']} on {p['chain'].capitalize()} worth {_dollars(p['usd_total'])}")
     for d in drops["airdrops"]:
         parts.append(f"airdrop {d['name']} of {d['amount_units']:.2f} {d['symbol']}, {_dollars(d['usd'])}, status {d['status']}")
     total = result["usd_total"]
@@ -150,16 +150,18 @@ def claim(body: ClaimIn) -> dict:
     ex = _executors(body.conversation_id)
     scan_result = ex["scan_wallet"](address)
     g = ex["estimate_gas_cost"]()
-    gas_usd, airdrop_gas_usd = g["collect_gas_usd"], g["airdrop_gas_usd"]
+    gas_by_chain, airdrop_gas_usd = g.get("collect_gas_usd_by_chain", {}), g["airdrop_gas_usd"]
     said, received, skipped = [], 0.0, []
     for p in scan_result["uniswap"]["positions"]:
+        gas_usd = gas_by_chain.get(p["chain"], g["collect_gas_usd"])
+        where = p["chain"].capitalize()
         if p["usd_total"] <= gas_usd:
-            skipped.append(f"position {p['token_id']} worth {_dollars(p['usd_total'])}, less than the gas")
+            skipped.append(f"position {p['token_id']} on {where} worth {_dollars(p['usd_total'])}, less than the gas")
             continue
-        r = ex["collect_fees"](p["token_id"])
+        r = ex["collect_fees"](p["token_id"], p["chain"])
         if r["status"] == "success":
             received += r["usd_received"]
-            said.append(f"collected {_dollars(r['usd_received'])} of fees from position {p['token_id']}")
+            said.append(f"collected {_dollars(r['usd_received'])} of fees from position {p['token_id']} on {where}")
         else:
             said.append(f"fees on position {p['token_id']} did not go through, status {r['status']}")
     for d in scan_result["airdrops"]["airdrops"]:

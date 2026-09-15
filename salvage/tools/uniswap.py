@@ -65,12 +65,31 @@ def scan_fees_raw(owner: str, chain: Chain | None = None) -> dict:
         sym1, _ = chain.token_meta(info["token1"])
         positions.append({
             "token_id": token_id,
+            "chain": chain.name,
             "pool": f"{sym0}/{sym1} {info['fee_tier'] / 10000:.2f}%",
             "token0": info["token0"], "token1": info["token1"],
             "symbol0": sym0, "symbol1": sym1,
             "amount0": a0, "amount1": a1,
         })
-    return {"owner": owner, "positions": positions, "positions_total": total, "positions_scanned": len(positions), "block": chain.block_number}
+    return {"owner": owner, "chain": chain.name, "positions": positions, "positions_total": total, "positions_scanned": len(positions), "block": chain.block_number}
+
+
+def merge_scans(scans: list[dict]) -> dict:
+    """One result across chains: positions concatenated (each carries its chain), counts and totals summed."""
+    out = {"owner": scans[0]["owner"] if scans else None, "chains": {s["chain"]: s["block"] for s in scans},
+           "positions": [p for s in scans for p in s["positions"]],
+           "positions_total": sum(s["positions_total"] for s in scans), "positions_scanned": sum(s["positions_scanned"] for s in scans)}
+    if scans and "usd_total" in scans[0]:
+        out["usd_total"] = round(sum(s["usd_total"] for s in scans), 2)
+    return out
+
+
+def scan_fees_raw_all(owner: str, chains: list[Chain]) -> dict:
+    return merge_scans([scan_fees_raw(owner, c) for c in chains])
+
+
+def scan_fees_all(owner: str, chains: list[Chain]) -> dict:
+    return merge_scans([scan_fees(owner, c) for c in chains])
 
 
 def scan_fees(owner: str, chain: Chain | None = None) -> dict:
@@ -94,6 +113,7 @@ def scan_fees(owner: str, chain: Chain | None = None) -> dict:
         total_usd += pos_usd
         out.append({
             "token_id": pos["token_id"],
+            "chain": chain.name,
             "pool": pos["pool"],
             "fees": [
                 {"symbol": pos["symbol0"], "token": pos["token0"], "amount_raw": pos["amount0"], "decimals": dec0, "amount": units0, "usd": usd0},
@@ -102,5 +122,5 @@ def scan_fees(owner: str, chain: Chain | None = None) -> dict:
             "usd_total": round(pos_usd, 2),
             "fully_priced": usd0 is not None and usd1 is not None,
         })
-    return {"owner": raw["owner"], "block": raw["block"], "positions": out, "positions_total": raw["positions_total"],
+    return {"owner": raw["owner"], "chain": chain.name, "block": raw["block"], "positions": out, "positions_total": raw["positions_total"],
             "positions_scanned": raw["positions_scanned"], "usd_total": round(total_usd, 2)}

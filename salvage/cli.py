@@ -20,26 +20,27 @@ from .config import settings
 
 
 def cmd_doctor() -> None:
-    from .chain import get_chain
+    from .chain import available_chains
     from .prism.tracer import get_tracer
 
-    print("fork:", end=" ")
     try:
-        chain = get_chain()
-        print(f"ok, block {chain.block_number} at {chain.rpc_url}")
+        for chain in available_chains():
+            print(f"fork {chain.name}: ok, block {chain.block_number} at {chain.rpc_url}")
     except Exception as exc:
-        print(f"not reachable ({exc})")
+        print(f"fork ethereum: not reachable ({exc})")
     print("model:", "configured" if settings.llm_enabled else "missing ANTHROPIC_API_KEY or MODEL_ID")
     print("prism:", json.dumps(get_tracer().doctor(), indent=2, default=str))
 
 
 def cmd_scan(address: str, raw: bool = False) -> None:
+    from .chain import available_chains
     from .tools import airdrops, uniswap
 
+    chains = available_chains()
     if raw:
-        print(json.dumps({"uniswap": uniswap.scan_fees_raw(address), "airdrops": airdrops.scan_airdrops_raw(address)}, indent=2, default=str))
+        print(json.dumps({"uniswap": uniswap.scan_fees_raw_all(address, chains), "airdrops": airdrops.scan_airdrops_raw(address)}, indent=2, default=str))
     else:
-        fees, drops = uniswap.scan_fees(address), airdrops.scan_airdrops(address)
+        fees, drops = uniswap.scan_fees_all(address, chains), airdrops.scan_airdrops(address)
         print(json.dumps({"uniswap": fees, "airdrops": drops, "usd_total": round(fees["usd_total"] + drops["usd_total"], 2)}, indent=2, default=str))
 
 
@@ -100,9 +101,12 @@ def cmd_evidence() -> None:
 
 
 def cmd_serve(port: int) -> None:
+    import os
+
     import uvicorn
 
-    uvicorn.run("salvage.server:app", host="127.0.0.1", port=port, reload=False)
+    # local by default; a container sets SERVE_HOST=0.0.0.0 so the platform can reach it
+    uvicorn.run("salvage.server:app", host=os.getenv("SERVE_HOST", "127.0.0.1"), port=port, reload=False)
 
 
 def main(argv: list[str] | None = None) -> None:

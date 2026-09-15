@@ -137,9 +137,9 @@ def claim_airdrop(distributor: str, owner: str, chain: Chain | None = None) -> d
 
 
 def gas_cost_usd(gas_used: int, chain: Chain | None = None) -> float:
-    """Rough USD cost of a transaction at the fork's current base fee."""
+    """Rough USD cost of a transaction: the fork's current base fee plus the chain's usual tip, times the ETH price."""
     chain = chain or get_chain()
-    from ..contracts import PRICED_TOKENS
-    eth_price = usd_price(PRICED_TOKENS["WETH"][0], chain) or 0.0
-    gas_price = chain.w3.eth.gas_price
+    eth_price = usd_price(chain.token_address("WETH"), chain) or 0.0
+    base_fee = int(chain.w3.eth.get_block("latest").get("baseFeePerGas") or chain.w3.eth.gas_price)
+    gas_price = base_fee + int(chain.spec.get("tip_wei", 1_000_000_000))
     return gas_used * gas_price / 1e18 * eth_price

@@ -1,0 +1,13 @@
+.git
+.venv
+.env
+logs
+data/runs
+data/public_url.txt
+data/wallets.json
+data/airdrops.json
+contracts/out
+contracts/cache
+__pycache__
+*.pyc
+.pytest_cache

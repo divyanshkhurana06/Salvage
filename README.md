@@ -6,14 +6,14 @@ Salvage ships in two versions on purpose. **v1** is the naive first draft any te
 
 ## What it does
 
-You paste a wallet address. Salvage scans it on a local fork of Ethereum mainnet for:
+You paste a wallet address. Salvage scans it on local forks of Ethereum mainnet and Base for:
 
-* uncollected Uniswap v3 LP fees (real positions, real contracts, real prices from Chainlink)
+* uncollected Uniswap v3 LP fees on Ethereum and on Base (real positions, real contracts, real prices from Chainlink on each chain)
 * unclaimed airdrops (merkle distributor contracts with published eligibility lists)
 
-It tells you what is claimable and what it is worth in dollars, and when you ask, it claims it and shows you the receipt. You can talk to it: "only the Uniswap one", "is the gas worth it?", "now check my other wallet".
+It tells you what is claimable and what it is worth in dollars, and when you ask, it claims it on the right chain and shows you the receipt. You can talk to it: "only the Uniswap one", "is the gas worth it?", "now check my other wallet".
 
-Everything runs against an Anvil fork of mainnet, so the contracts, positions, and prices are real, but no real funds move. Claims execute by impersonating the wallet on the fork, which is how you can watch exactly what a claim would do before doing it for real.
+Everything runs against Anvil forks of the real chains, so the contracts, positions, and prices are real, but no real funds move. Claims execute by impersonating the wallet on the fork, which is how you can watch exactly what a claim would do before doing it for real. A chain is one entry in `salvage/contracts.py` (position manager, tokens, Chainlink feeds) plus a fork; the gas estimate is per chain, so the same $0.50 of fees is worth collecting on Base (gas about a quarter of a cent) and not on Ethereum (gas about forty cents).
 
 ## The failure nobody planted
 
@@ -96,14 +96,16 @@ python3 -m venv .venv
 cp .env.example .env        # then fill in ANTHROPIC_API_KEY, MODEL_ID, PRISMTRACE_API_KEY
 ```
 
-Start the fork, find real positions, and build the wallet set:
+Start the forks, find real positions, and build the wallet set:
 
 ```bash
-scripts/start_fork.sh background            # Anvil fork of mainnet at the pinned block
+scripts/start_fork.sh background            # Anvil fork of Ethereum mainnet at the pinned block
+scripts/start_fork.sh background base       # Anvil fork of Base (optional, needs BASE_RPC_URL)
 (cd contracts && forge build)               # compiles the airdrop distributor
-.venv/bin/python scripts/probe_positions.py 30          # finds real Uniswap positions with collectable fees
-.venv/bin/python scripts/build_test_set.py              # deploys airdrops, writes data/wallets.json with ground truth
-.venv/bin/python -m salvage.cli doctor                  # fork, model, and PRISM status
+.venv/bin/python scripts/probe_positions.py 30               # finds real Uniswap positions with collectable fees on Ethereum
+.venv/bin/python scripts/probe_positions.py 8 --chain base   # the same on Base
+.venv/bin/python scripts/build_test_set.py                   # deploys airdrops, writes data/wallets.json with ground truth across chains
+.venv/bin/python -m salvage.cli doctor                       # forks, model, and PRISM status
 ```
 
 Talk to it, or run the web UI:
@@ -129,7 +131,18 @@ Run the evaluation and print the before and after table:
 .venv/bin/python -m salvage.cli report
 ```
 
-The fork keeps its state only while it runs. After restarting it, run `build_test_set.py` again.
+The forks keep their state only while they run. After restarting one, run `build_test_set.py` again.
+
+## Deploying it
+
+The whole thing runs in one container: both forks, the contracts, the wallet set, and the UI.
+
+```bash
+docker build -t salvage .
+docker run --env-file .env -p 8000:8000 salvage
+```
+
+`scripts/container_start.sh` is the boot sequence: start the forks, probe for positions when the candidate files are missing, build the wallet set, run the doctor, serve. The container needs the same variables as `.env` (archive RPC upstreams, the model key, the PRISM key). On a platform that builds from a Dockerfile (Railway, Fly, Render), point it at this repository, paste the variables, and set `ACCESS_CODE` to something private: the UI then asks for that code once before it can talk to the agents, so a shared link cannot spend the model key. The forks need about 1 GB of memory between them, and the first boot takes a few minutes while the wallet set is built.
 
 ## Voice (optional)
 
@@ -147,12 +160,12 @@ Needs `ELEVENLABS_API_KEY` and `NGROK_AUTHTOKEN` in `.env`. The tunnel url chang
 
 ```
 salvage/
-  chain.py            web3 connection to the fork, impersonation, snapshots
-  contracts.py        mainnet addresses and minimal ABIs
+  chain.py            web3 connection to each fork (Ethereum, Base), impersonation, snapshots
+  contracts.py        per chain addresses (position manager, tokens, Chainlink feeds) and minimal ABIs
   tools/
-    uniswap.py        positions and collectable fees (raw for v1, verified for v2)
+    uniswap.py        positions and collectable fees (raw for v1, verified for v2), merged across chains
     airdrops.py       merkle tree, registry, eligibility and claim status
-    pricing.py        Chainlink USD prices
+    pricing.py        Chainlink USD prices on the chain the token lives on
     claims.py         naive claims (hash only) and verified claims (simulate, execute, receipt)
   agent/
     prompts.py        the v1 and v2 system prompts
@@ -161,12 +174,15 @@ salvage/
     llm.py            model access, plus a scripted model for tests
   prism/tracer.py     traces, spans, and trajectories to PRISM (offline log when no key)
   eval/
+    check.py          the chain's verdict on one turn, attached to its PRISM trace
     runner.py         runs the wallet set, scores replies against the chain
     report.py         before and after table
   server.py           FastAPI backend for the UI
+  voice.py            the tool endpoints the ElevenLabs agent calls
   cli.py              command line entry points
 contracts/            the MerkleAirdrop distributor (Solidity, Foundry)
-scripts/              start_fork.sh, probe_positions.py, build_test_set.py
+scripts/              start_fork.sh, probe_positions.py, build_test_set.py, demo.sh, container_start.sh
+Dockerfile            one container with both forks and the UI
 ui/index.html         the demo UI
 tests/                unit tests (no network, no keys)
 data/                 candidates, airdrop registry, wallet set, run outputs
@@ -174,7 +190,7 @@ data/                 candidates, airdrop registry, wallet set, run outputs
 
 ## What is real and what is not
 
-* The Uniswap positions, their fees, the token contracts, and the Chainlink prices are the real mainnet state at the pinned block.
+* The Uniswap positions, their fees, the token contracts, and the Chainlink prices are the real Ethereum and Base state at the pinned blocks.
 * The airdrop distributors are deployed by `build_test_set.py` on the fork, funded with real USDC from a large holder on the fork, so that some wallets have an airdrop to claim, some already claimed it, and some missed the window. A real airdrop plugs into the same registry format.
 * Claims are real transactions on the fork, signed by impersonating the wallet. On mainnet the user would sign them.
 * The evaluation scores against the chain, not against the model: a reported value is correct if it is within 5 percent of what the verified tools compute, and a claim report is correct if it matches the transaction receipts.

@@ -6,12 +6,12 @@ import json
 import uuid
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel
 
 from .agent.loop import Agent
-from .chain import get_chain
+from .chain import available_chains, get_chain
 from .config import DATA_DIR, ROOT, settings
 from .eval.report import compare
 from .eval.runner import latest_run
@@ -21,7 +21,7 @@ from .voice import router as voice_router
 app = FastAPI(title="Salvage")
 app.include_router(voice_router)
 SESSIONS: dict[str, Agent] = {}
-BASE_SNAPSHOT: dict[str, str | None] = {"id": None}
+BASE_SNAPSHOT: dict[str, str] = {}  # chain name -> snapshot id taken at startup, what Reset fork goes back to
 UI_FILE = ROOT / "ui" / "index.html"
 
 
@@ -35,12 +35,24 @@ class ChatIn(BaseModel):
     message: str
 
 
+@app.middleware("http")
+async def require_access_code(request: Request, call_next):
+    """When ACCESS_CODE is set (a public deployment), every call that spends model credits or moves the fork needs it.
+    The page, the status, the wallet list and the voice tool endpoints stay open; the UI asks for the code once."""
+    path = request.url.path
+    guarded = path.startswith("/api/") and not path.startswith("/api/voice/") and path not in ("/api/status", "/api/wallets", "/api/report")
+    if settings.access_code and guarded and request.headers.get("x-access-code", "") != settings.access_code:
+        return JSONResponse({"detail": "access code required"}, status_code=401)
+    return await call_next(request)
+
+
 @app.on_event("startup")
 def take_base_snapshot() -> None:
     try:
-        BASE_SNAPSHOT["id"] = get_chain().snapshot()
+        for chain in available_chains():
+            BASE_SNAPSHOT[chain.name] = chain.snapshot()
     except Exception:
-        BASE_SNAPSHOT["id"] = None
+        BASE_SNAPSHOT.clear()
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -50,19 +62,22 @@ def index() -> str:
 
 @app.get("/api/status")
 def status() -> dict:
+    # the wallet set records the block each fork was at when it was built; any block after that is a transaction mined since
+    path = DATA_DIR / "wallets.json"
+    built = json.loads(path.read_text()) if path.exists() else {}
+    built_blocks = built.get("blocks") or ({"ethereum": built["block"]} if built.get("block") else {})
+    forks = {}
     try:
-        chain = get_chain()
-        fork = {"ok": True, "block": chain.block_number}
-        # the wallet set records the block it was built at; any block after that is a transaction mined since
-        path = DATA_DIR / "wallets.json"
-        if path.exists():
-            built_at = json.loads(path.read_text()).get("block")
-            fork["built_at"] = built_at
-            fork["txs_since_build"] = max(0, chain.block_number - built_at) if built_at else None
+        for chain in available_chains():
+            block = chain.block_number
+            built_at = built_blocks.get(chain.name)
+            forks[chain.name] = {"ok": True, "label": chain.label, "block": block, "built_at": built_at,
+                                 "txs_since_build": max(0, block - built_at) if built_at else None}
     except Exception as exc:
-        fork = {"ok": False, "error": str(exc)}
-    return {"fork": fork, "model": settings.llm_enabled, "prism": settings.prism_enabled, "prism_project": settings.prism_project_id,
-            "voice_agent_id": settings.elevenlabs_agent_id}
+        forks["ethereum"] = {"ok": False, "label": "Ethereum", "error": str(exc)}
+    return {"fork": forks.get("ethereum"), "forks": forks, "model": settings.llm_enabled, "prism": settings.prism_enabled,
+            "prism_project": settings.prism_project_id, "voice_agent_id": settings.elevenlabs_agent_id,
+            "access_code_required": bool(settings.access_code)}
 
 
 @app.get("/api/wallets")
@@ -117,30 +132,33 @@ class ShockIn(BaseModel):
 
 @app.post("/api/shock")
 def market_shock(body: ShockIn) -> dict:
-    """Simulated black swan: ETH and BTC prices move by the factor for every scan from now on.
+    """Simulated black swan: ETH and BTC prices move by the factor for every scan from now on, on every chain.
     The naive agent keeps answering from what it read before the move; the verified agent scans again."""
-    from .contracts import PRICED_TOKENS
+    from .contracts import SHOCK_SYMBOLS
     from .tools import pricing
 
     if body.factor == 1.0:
         pricing.SHOCK.clear()
     else:
-        for sym in ("WETH", "WBTC"):
-            pricing.SHOCK[PRICED_TOKENS[sym][0].lower()] = body.factor
+        for sym in SHOCK_SYMBOLS:
+            pricing.SHOCK[sym] = body.factor
     return {"ok": True, "factor": body.factor, "active": bool(pricing.SHOCK)}
 
 
 @app.post("/api/reset_fork")
 def reset_fork() -> dict:
+    """Every fork goes back to the state it had when the server started: claims undone, prices restored."""
     from .tools import pricing
 
     pricing.SHOCK.clear()
-    chain = get_chain()
-    if BASE_SNAPSHOT["id"] is not None:
-        chain.revert(BASE_SNAPSHOT["id"])
-    BASE_SNAPSHOT["id"] = chain.snapshot()
+    blocks = {}
+    for chain in available_chains():
+        if chain.name in BASE_SNAPSHOT:
+            chain.revert(BASE_SNAPSHOT[chain.name])
+        BASE_SNAPSHOT[chain.name] = chain.snapshot()
+        blocks[chain.name] = chain.block_number
     SESSIONS.clear()
-    return {"ok": True, "block": chain.block_number}
+    return {"ok": True, "block": blocks.get("ethereum"), "blocks": blocks}
 
 
 @app.get("/api/report")

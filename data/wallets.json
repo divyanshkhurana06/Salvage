@@ -1,5 +1,9 @@
 {
-  "block": 25975679,
+  "block": 25975686,
+  "blocks": {
+    "ethereum": 25975686,
+    "base": 51323700
+  },
   "wallets": [
     {
       "label": "both_01",
@@ -10,12 +14,13 @@
         "fee_positions": [
           {
             "token_id": 1249936,
+            "chain": "ethereum",
             "usd": 15.5
           }
         ],
         "airdrops": [
           {
-            "distributor": "0x54112470dFDEeD481f4e4Fd6698D96533CE3CbB9",
+            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
             "status": "claimable",
             "usd": 12.398096228
           }
@@ -31,12 +36,13 @@
         "fee_positions": [
           {
             "token_id": 1364991,
+            "chain": "ethereum",
             "usd": 5.89
           }
         ],
         "airdrops": [
           {
-            "distributor": "0x54112470dFDEeD481f4e4Fd6698D96533CE3CbB9",
+            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
             "status": "claimable",
             "usd": 48.742515412500005
           }
@@ -52,12 +58,13 @@
         "fee_positions": [
           {
             "token_id": 1364980,
+            "chain": "ethereum",
             "usd": 4.94
           }
         ],
         "airdrops": [
           {
-            "distributor": "0x54112470dFDEeD481f4e4Fd6698D96533CE3CbB9",
+            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
             "status": "claimable",
             "usd": 136.97896639
           }
@@ -73,12 +80,13 @@
         "fee_positions": [
           {
             "token_id": 1364959,
+            "chain": "ethereum",
             "usd": 2.99
           }
         ],
         "airdrops": [
           {
-            "distributor": "0x54112470dFDEeD481f4e4Fd6698D96533CE3CbB9",
+            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
             "status": "claimable",
             "usd": 310.452328935
           }
@@ -94,12 +102,13 @@
         "fee_positions": [
           {
             "token_id": 1364996,
+            "chain": "ethereum",
             "usd": 2.98
           }
         ],
         "airdrops": [
           {
-            "distributor": "0x54112470dFDEeD481f4e4Fd6698D96533CE3CbB9",
+            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
             "status": "claimable",
             "usd": 619.9048114
           }
@@ -115,12 +124,13 @@
         "fee_positions": [
           {
             "token_id": 1365019,
+            "chain": "ethereum",
             "usd": 2.28
           }
         ],
         "airdrops": [
           {
-            "distributor": "0x54112470dFDEeD481f4e4Fd6698D96533CE3CbB9",
+            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
             "status": "claimable",
             "usd": 980.0995022175
           }
@@ -136,6 +146,7 @@
         "fee_positions": [
           {
             "token_id": 1364954,
+            "chain": "ethereum",
             "usd": 2.19
           }
         ],
@@ -151,6 +162,7 @@
         "fee_positions": [
           {
             "token_id": 1364917,
+            "chain": "ethereum",
             "usd": 0.5
           }
         ],
@@ -166,6 +178,7 @@
         "fee_positions": [
           {
             "token_id": 1364972,
+            "chain": "ethereum",
             "usd": 0.26
           }
         ],
@@ -181,6 +194,7 @@
         "fee_positions": [
           {
             "token_id": 1364981,
+            "chain": "ethereum",
             "usd": 0.24
           }
         ],
@@ -196,6 +210,7 @@
         "fee_positions": [
           {
             "token_id": 1364993,
+            "chain": "ethereum",
             "usd": 0.08
           }
         ],
@@ -211,6 +226,7 @@
         "fee_positions": [
           {
             "token_id": 1364913,
+            "chain": "ethereum",
             "usd": 0.04
           }
         ],
@@ -226,7 +242,7 @@
         "fee_positions": [],
         "airdrops": [
           {
-            "distributor": "0x54112470dFDEeD481f4e4Fd6698D96533CE3CbB9",
+            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
             "status": "claimable",
             "usd": 0.3099524057
           }
@@ -242,7 +258,7 @@
         "fee_positions": [],
         "airdrops": [
           {
-            "distributor": "0x54112470dFDEeD481f4e4Fd6698D96533CE3CbB9",
+            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
             "status": "claimable",
             "usd": 0.1899708293
           }
@@ -258,7 +274,7 @@
         "fee_positions": [],
         "airdrops": [
           {
-            "distributor": "0x54112470dFDEeD481f4e4Fd6698D96533CE3CbB9",
+            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
             "status": "claimable",
             "usd": 3.7494242625000003
           }
@@ -274,7 +290,7 @@
         "fee_positions": [],
         "airdrops": [
           {
-            "distributor": "0x54112470dFDEeD481f4e4Fd6698D96533CE3CbB9",
+            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
             "status": "claimable",
             "usd": 22.096606987
           }
@@ -290,7 +306,7 @@
         "fee_positions": [],
         "airdrops": [
           {
-            "distributor": "0x54112470dFDEeD481f4e4Fd6698D96533CE3CbB9",
+            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
             "status": "claimable",
             "usd": 74.98848525
           }
@@ -306,7 +322,7 @@
         "fee_positions": [],
         "airdrops": [
           {
-            "distributor": "0x54112470dFDEeD481f4e4Fd6698D96533CE3CbB9",
+            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
             "status": "claimable",
             "usd": 409.93705270000004
           }
@@ -322,7 +338,7 @@
         "fee_positions": [],
         "airdrops": [
           {
-            "distributor": "0x54112470dFDEeD481f4e4Fd6698D96533CE3CbB9",
+            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
             "status": "already claimed",
             "usd": 54.991555850000005
           }
@@ -338,7 +354,7 @@
         "fee_positions": [],
         "airdrops": [
           {
-            "distributor": "0x54112470dFDEeD481f4e4Fd6698D96533CE3CbB9",
+            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
             "status": "already claimed",
             "usd": 119.98157640000001
           }
@@ -354,7 +370,7 @@
         "fee_positions": [],
         "airdrops": [
           {
-            "distributor": "0x54112470dFDEeD481f4e4Fd6698D96533CE3CbB9",
+            "distributor": "0x84f97Aa999bB9667685E77d1ea9873d061d29D89",
             "status": "already claimed",
             "usd": 259.9600822
           }
@@ -370,7 +386,7 @@
         "fee_positions": [],
         "airdrops": [
           {
-            "distributor": "0x7D0b7DB859689Bfc8ea73DE4fd44f317A18845CB",
+            "distributor": "0xD7D0ceccBfbdDb260aCF22010D749f0160057663",
             "status": "window closed",
             "usd": 249.96161750000002
           }
@@ -386,7 +402,7 @@
         "fee_positions": [],
         "airdrops": [
           {
-            "distributor": "0x7D0b7DB859689Bfc8ea73DE4fd44f317A18845CB",
+            "distributor": "0xD7D0ceccBfbdDb260aCF22010D749f0160057663",
             "status": "window closed",
             "usd": 0.2099677587
           }
@@ -402,7 +418,7 @@
         "fee_positions": [],
         "airdrops": [
           {
-            "distributor": "0x7D0b7DB859689Bfc8ea73DE4fd44f317A18845CB",
+            "distributor": "0xD7D0ceccBfbdDb260aCF22010D749f0160057663",
             "status": "window closed",
             "usd": 369.94319390000004
           }
@@ -446,6 +462,70 @@
       "ground_truth": {
         "usd_total": 0.0,
         "fee_positions": [],
+        "airdrops": []
+      }
+    },
+    {
+      "label": "base_01",
+      "address": "0xC407870c29515737A9F1170659D09193fd66c286",
+      "cohort": "base_fees",
+      "ground_truth": {
+        "usd_total": 1.17,
+        "fee_positions": [
+          {
+            "token_id": 5849948,
+            "chain": "base",
+            "usd": 1.17
+          }
+        ],
+        "airdrops": []
+      }
+    },
+    {
+      "label": "base_02",
+      "address": "0x46220109EFa8537824A9c8b473Bc2F61d6645289",
+      "cohort": "base_fees",
+      "ground_truth": {
+        "usd_total": 1.17,
+        "fee_positions": [
+          {
+            "token_id": 5849947,
+            "chain": "base",
+            "usd": 1.17
+          }
+        ],
+        "airdrops": []
+      }
+    },
+    {
+      "label": "base_03",
+      "address": "0x747149760D53588FC5Cfd06F2c083eCeAF77486c",
+      "cohort": "base_fees",
+      "ground_truth": {
+        "usd_total": 1.16,
+        "fee_positions": [
+          {
+            "token_id": 5849951,
+            "chain": "base",
+            "usd": 1.16
+          }
+        ],
+        "airdrops": []
+      }
+    },
+    {
+      "label": "base_04",
+      "address": "0x602717D2EcCD63114f7f0a66D98dE643d9cCE5c9",
+      "cohort": "base_fees",
+      "ground_truth": {
+        "usd_total": 1.16,
+        "fee_positions": [
+          {
+            "token_id": 5849949,
+            "chain": "base",
+            "usd": 1.16
+          }
+        ],
         "airdrops": []
       }
     }

@@ -81,6 +81,18 @@ def test_chain_check_travels_with_the_trace(monkeypatch):
     assert check_span.status == "error" and "Does not match" in check_span.output_text
 
 
+def test_scans_from_two_chains_merge_into_one_result():
+    from salvage.tools.uniswap import merge_scans
+
+    eth = {"owner": "0xab", "chain": "ethereum", "block": 10, "positions": [{"token_id": 1, "chain": "ethereum", "usd_total": 5.0}], "positions_total": 1, "positions_scanned": 1, "usd_total": 5.0}
+    base = {"owner": "0xab", "chain": "base", "block": 20, "positions": [{"token_id": 7, "chain": "base", "usd_total": 2.5}], "positions_total": 3, "positions_scanned": 1, "usd_total": 2.5}
+    merged = merge_scans([eth, base])
+    assert merged["usd_total"] == 7.5 and merged["positions_total"] == 4
+    assert [p["chain"] for p in merged["positions"]] == ["ethereum", "base"]
+    assert merged["chains"] == {"ethereum": 10, "base": 20}
+    assert merge_scans([])["positions"] == []
+
+
 def test_no_chain_means_no_check():
     state = {"active_wallet": None}
     agent = Agent("v2", llm=ScriptedLLM(script), executors=fake_executors(state), tracer=Tracer(enabled=False), session_id="s2")

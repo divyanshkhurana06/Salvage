@@ -85,9 +85,13 @@ def tx_outcomes(turn: dict, chain: Chain) -> list[dict]:
         out = call["output"] if isinstance(call["output"], dict) else {}
         status = out.get("status")
         tx_hash = out.get("tx_hash")
-        if status is None and tx_hash:  # v1 style: only a hash, so read the receipt ourselves
+        if status is None and tx_hash:  # v1 style: only a hash, so read the receipt ourselves, on the chain the call named
             try:
-                receipt = chain.w3.eth.get_transaction_receipt(tx_hash)
+                from ..chain import get_chain as _chain_by_name
+
+                target = call["input"].get("chain") if isinstance(call["input"], dict) else None
+                on = _chain_by_name(target) if target and target != chain.name else chain
+                receipt = on.w3.eth.get_transaction_receipt(tx_hash)
                 status = "success" if receipt["status"] == 1 else "reverted"
             except Exception:
                 status = "unknown"
@@ -128,7 +132,10 @@ def score_session(wallet: dict, turn1: dict, turn2: dict, outcomes: list[dict]) 
 
 def run_eval(version: str, limit: int | None = None, cohorts: list[str] | None = None, chain: Chain | None = None,
              run_id: str | None = None, verbose: bool = True) -> dict:
+    from ..chain import available_chains
+
     chain = chain or get_chain()
+    chains = available_chains() if chain.name == "ethereum" else [chain]  # every fork is snapshotted and reverted per wallet
     wallets = load_wallets()
     if cohorts:
         wallets = [w for w in wallets if w["cohort"] in cohorts]
@@ -138,7 +145,7 @@ def run_eval(version: str, limit: int | None = None, cohorts: list[str] | None =
     results = []
     t0 = time.time()
     for w in wallets:
-        snap = chain.snapshot()
+        snaps = [(c, c.snapshot()) for c in chains]
         agent = Agent(version, session_id=f"{version}_{w['label']}_{run_id}", user_id=w["label"],
                       metadata={"cohort": w["cohort"], "run_id": run_id, "truth_usd": w["ground_truth"]["usd_total"]}, chain=chain)
         try:
@@ -147,7 +154,8 @@ def run_eval(version: str, limit: int | None = None, cohorts: list[str] | None =
             outcomes = tx_outcomes(turn2, chain)
             score = score_session(w, turn1, turn2, outcomes)
         finally:
-            chain.revert(snap)
+            for c, snap in snaps:
+                c.revert(snap)
         results.append({"label": w["label"], "address": w["address"], "cohort": w["cohort"], "session_id": agent.session_id,
                         "turn1": turn1, "turn2": turn2, "outcomes": outcomes, "score": score})
         if verbose:

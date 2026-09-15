@@ -9,18 +9,28 @@ from web3 import Web3
 from web3.contract import Contract
 
 from .config import settings
-from .contracts import CHAINLINK_ABI, ERC20_ABI, MERKLE_AIRDROP_ABI, NONFUNGIBLE_POSITION_MANAGER, POSITION_MANAGER_ABI
+from .contracts import CHAINLINK_ABI, CHAINS, ERC20_ABI, MERKLE_AIRDROP_ABI, POSITION_MANAGER_ABI
 
 
 class Chain:
-    """Thin wrapper around web3 for a local Anvil fork."""
+    """Thin wrapper around web3 for a local Anvil fork of one chain."""
 
-    def __init__(self, rpc_url: str | None = None):
-        self.rpc_url = rpc_url or settings.fork_rpc_url
+    def __init__(self, rpc_url: str | None = None, name: str = "ethereum"):
+        if name not in CHAINS:
+            raise ValueError(f"unknown chain {name}, known: {', '.join(CHAINS)}")
+        self.name = name
+        self.spec = CHAINS[name]
+        self.label: str = self.spec["label"]
+        self.rpc_url = rpc_url or settings.fork_urls.get(name) or settings.fork_rpc_url
         self.w3 = Web3(Web3.HTTPProvider(self.rpc_url, request_kwargs={"timeout": 120}))
         if not self.w3.is_connected():
-            raise ConnectionError(f"No node at {self.rpc_url}. Start the fork with scripts/start_fork.sh")
+            raise ConnectionError(f"No node at {self.rpc_url}. Start the {self.label} fork with scripts/start_fork.sh")
         self._erc20_cache: dict[str, Contract] = {}
+        self.token_to_feed: dict[str, str] = {addr.lower(): feed for addr, feed in self.spec["tokens"].values()}
+        self.token_to_symbol: dict[str, str] = {addr.lower(): sym for sym, (addr, _) in self.spec["tokens"].items()}
+
+    def token_address(self, symbol: str) -> str:
+        return self.spec["tokens"][symbol][0]
 
     # ---------- generic rpc ----------
     def rpc(self, method: str, params: list[Any] | None = None) -> Any:
@@ -58,7 +68,7 @@ class Chain:
     # ---------- contracts ----------
     @property
     def position_manager(self) -> Contract:
-        return self.w3.eth.contract(address=self.checksum(NONFUNGIBLE_POSITION_MANAGER), abi=POSITION_MANAGER_ABI)
+        return self.w3.eth.contract(address=self.checksum(self.spec["position_manager"]), abi=POSITION_MANAGER_ABI)
 
     def erc20(self, address: str) -> Contract:
         key = address.lower()
@@ -111,11 +121,27 @@ class Chain:
         }
 
 
-_chain: Chain | None = None
+_chains: dict[str, Chain] = {}
+_unavailable: set[str] = set()
 
 
-def get_chain() -> Chain:
-    global _chain
-    if _chain is None:
-        _chain = Chain()
-    return _chain
+def get_chain(name: str = "ethereum") -> Chain:
+    if name not in _chains:
+        _chains[name] = Chain(name=name)
+    return _chains[name]
+
+
+def available_chains() -> list[Chain]:
+    """Every configured chain whose fork answers. Ethereum is required; the others are skipped when their fork is down."""
+    out = []
+    for name in settings.fork_urls:
+        if name in _unavailable:
+            continue
+        try:
+            out.append(get_chain(name))
+        except Exception as exc:
+            if name == "ethereum":
+                raise
+            _unavailable.add(name)
+            print(f"[chain] {name} fork not reachable, running without it: {exc}")
+    return out

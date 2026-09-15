@@ -23,7 +23,7 @@ from web3 import Web3
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from salvage.chain import get_chain  # noqa: E402
+from salvage.chain import available_chains, get_chain  # noqa: E402
 from salvage.config import DATA_DIR, ROOT  # noqa: E402
 from salvage.contracts import PRICED_TOKENS  # noqa: E402
 from salvage.tools import airdrops, claims, uniswap  # noqa: E402
@@ -103,6 +103,25 @@ def main() -> None:
     for k in range(13, 17):
         wallets.append({"label": f"empty_{k:02d}", "address": synthetic_address(k), "cohort": "empty"})
 
+    # Base: real wallets with uncollected fees on the second chain, when its fork is up and was probed
+    base_path = DATA_DIR / "candidates_base.json"
+    base_chain = next((c for c in available_chains() if c.name == "base"), None)
+    if base_chain is not None and base_path.exists():
+        by_owner_base: dict[str, dict] = {}
+        for c in sorted(json.loads(base_path.read_text())["candidates"], key=lambda c: -c["usd"]):
+            by_owner_base.setdefault(c["owner"].lower(), c)
+        taken = {w["address"].lower() for w in wallets}
+        k = 0
+        for c in by_owner_base.values():
+            if c["owner"].lower() in taken or uniswap.position_count(c["owner"], base_chain) > MAX_POSITIONS_PER_WALLET:
+                continue
+            k += 1
+            wallets.append({"label": f"base_{k:02d}", "address": base_chain.checksum(c["owner"]), "cohort": "base_fees"})
+            if k == 4:
+                break
+        print(f"{k} Base fee wallets")
+    chains = available_chains()
+
     # airdrop entries in USDC (6 decimals). A realistic spread on purpose: a couple just above the
     # gas an airdrop claim costs (about a quarter), a couple just below it, some mid sized, a few large.
     amounts = {
@@ -144,19 +163,19 @@ def main() -> None:
             assert r["status"] == "success", f"pre claim failed for {w['label']}: {r}"
     print("pre claimed the claimed_airdrop cohort")
 
-    # ground truth from the verified tools
+    # ground truth from the verified tools, across every chain that is up
     for w in wallets:
-        fees = uniswap.scan_fees(w["address"], chain)
+        fees = uniswap.scan_fees_all(w["address"], chains)
         drops = airdrops.scan_airdrops(w["address"], chain)
         w["ground_truth"] = {
             "usd_total": round(fees["usd_total"] + drops["usd_total"], 2),
-            "fee_positions": [{"token_id": p["token_id"], "usd": p["usd_total"]} for p in fees["positions"] if p["usd_total"] > 0],
+            "fee_positions": [{"token_id": p["token_id"], "chain": p["chain"], "usd": p["usd_total"]} for p in fees["positions"] if p["usd_total"] > 0],
             "airdrops": [{"distributor": d["distributor"], "status": d["status"], "usd": d["usd"]} for d in drops["airdrops"]],
         }
         print(f"  {w['label']:12} {w['address']}  ${w['ground_truth']['usd_total']:>10,.2f}")
 
     out = DATA_DIR / "wallets.json"
-    out.write_text(json.dumps({"block": chain.block_number, "wallets": wallets}, indent=2))
+    out.write_text(json.dumps({"block": chain.block_number, "blocks": {c.name: c.block_number for c in chains}, "wallets": wallets}, indent=2))
     print(f"wrote {len(wallets)} wallets to {out}")
 
 

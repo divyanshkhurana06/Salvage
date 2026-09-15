@@ -18,6 +18,16 @@ We do not touch mainnet. `scripts/start_fork.sh` starts Anvil (part of Foundry) 
 
 The block is pinned in `.env` (`FORK_BLOCK`) so the wallet set and the ground truth stay stable between runs. Anvil pulls the state it needs from an upstream RPC (`ETH_RPC_URL`). Because the pinned block is in the past, that RPC must serve archive reads. Two public endpoints worked during development (`https://eth.drpc.org`, `https://eth-mainnet.public.blastapi.io`); a free Alchemy or Infura key is the reliable option for the demo.
 
+### The second chain: Base
+
+There is a second fork, of Base (Coinbase's L2), on port 8546, started the same way (`scripts/start_fork.sh background base`, upstream `BASE_RPC_URL`, pinned at `BASE_FORK_BLOCK`). Uniswap v3 lives on Base at a different position manager address and the Chainlink feeds are different contracts, so `salvage/contracts.py` has one entry per chain: position manager, tokens, feeds, and the usual priority fee. `Chain` objects are created per name (`get_chain("base")`) and `available_chains()` lists the forks that answer, so the whole thing still runs on Ethereum alone when the Base fork is down.
+
+A scan runs on every available chain and merges the results: each position carries its `chain`, totals are summed, and the airdrops stay on Ethereum where the distributors are deployed. A claim names its chain (`collect_fees(token_id, chain)`), and the receipt is read on that chain. The gas estimate is per chain too, from the block base fee plus the chain's usual tip: about forty cents to collect on Ethereum, about a quarter of a cent on Base. That is the point of the second chain for the demo: the same $0.50 of fees is not worth collecting on one chain and is on the other, and v2 says so, per action, from tool output.
+
+Anvil quotes a 1 gwei tip on any fork, which would make Base look as expensive as Ethereum, so the Base fork is started with the real Base base fee (`--base-fee`, about 0.006 gwei) and the estimate uses the block base fee plus the per chain tip instead of `eth_gasPrice`.
+
+The wallet set has a `base_fees` cohort: real Base wallets with uncollected fees, found by `probe_positions.py --chain base`. Their ground truth is computed across both forks, like every other wallet's.
+
 ### The tools (salvage/tools)
 
 Tools are plain Python functions that read or write the chain. The agent never touches web3 directly; it only sees tool results. Each tool exists in two flavours:
@@ -91,10 +101,10 @@ The last three cohorts are the honesty check: they prove v2 reports failures as 
 
 ## Running it, step by step
 
-1. `scripts/start_fork.sh background` starts the fork. `logs/anvil.log` has its output.
+1. `scripts/start_fork.sh background` starts the Ethereum fork (`logs/anvil.log`); `scripts/start_fork.sh background base` starts the Base fork (`logs/anvil_base.log`).
 2. `(cd contracts && forge build)` compiles the distributor once.
-3. `python scripts/probe_positions.py 30` walks recent Uniswap position ids and keeps the ones whose owner can collect fees in tokens we can price. Run it again with a starting id (`probe_positions.py 25 1250000`) to add older positions with bigger fees; results merge into `data/candidates.json`.
-4. `python scripts/build_test_set.py` builds the wallet set and deploys the airdrops. Run it again whenever the fork restarts.
+3. `python scripts/probe_positions.py 30` walks recent Uniswap position ids and keeps the ones whose owner can collect fees in tokens we can price. Run it again with a starting id (`probe_positions.py 25 1250000`) to add older positions with bigger fees; results merge into `data/candidates.json`. `probe_positions.py 8 --chain base` does the same on Base into `data/candidates_base.json`.
+4. `python scripts/build_test_set.py` builds the wallet set and deploys the airdrops. Run it again whenever a fork restarts.
 5. `python -m salvage.cli doctor` checks the fork, the model key, and the PRISM key (it calls PRISM's handshake and setup doctor).
 6. `python -m salvage.cli chat v1` or `v2` to talk to the agent in the terminal. `python -m salvage.cli serve` for the UI.
 7. `python -m salvage.cli eval v1`, then `eval v2`, then `report`. If you change the scoring rules, `rescore` re-applies them to the saved runs for free.
@@ -140,11 +150,14 @@ If the venue internet is bad: the voice path needs it (ElevenLabs runs the conve
 * The airdrops are deployed by us on the fork. The contract is a standard distributor and the registry format is what real projects publish; nothing about the scanner is specific to our deployment.
 * v1's failure rate is measured, not chosen. Its tools return exactly what the contracts return; we did not hide anything from it.
 * The claims are real transactions on a copy of mainnet. On mainnet the user's wallet would sign them; the agent would never hold keys.
-* Values are only computed for tokens with a Chainlink USD feed (WETH, USDC, USDT, DAI, WBTC). Other tokens are reported as amounts without a dollar value.
+* Values are only computed for tokens with a Chainlink USD feed (WETH, USDC, USDT, DAI, WBTC on Ethereum; WETH, USDC, USDbC, DAI, cbBTC, cbETH on Base). Other tokens are reported as amounts without a dollar value.
+* Why two chains and not five: the second chain proves the design is chain agnostic (one registry entry and one fork per chain) and gives the gas story teeth. Arbitrum, Optimism and Polygon are the same shape; what is missing for each is an archive RPC and a probe run, not code.
+* Why Uniswap fees and merkle airdrops and not Aave or Compound rewards: those are the two shapes unclaimed value comes in, value that accrues to a position and value that is allocated to an address. A rewards contract is a third scanner and a third claim function in `salvage/tools`, and the evaluation would score it the same way.
 
 ## Troubleshooting
 
-* `No node at http://127.0.0.1:8545`: the fork is not running. `scripts/start_fork.sh background`.
+* `No node at http://127.0.0.1:8545`: the fork is not running. `scripts/start_fork.sh background`. The same for 8546 and the Base fork (`scripts/start_fork.sh background base`); without it Salvage runs on Ethereum only and says so in the server log.
+* The header says a fork has claims mined since the wallet set was built: a rehearsal changed the fork. Press **Reset fork**. If the server itself was restarted after the rehearsal, restart the forks and run `build_test_set.py` again, because the reset can only go back to the state the server started with.
 * `Archive requests require a personal token` or similar from the fork: the upstream RPC does not serve archive reads for the pinned block. Switch `ETH_RPC_URL` to an endpoint that does (see above) and restart the fork.
 * `wallet is not in this airdrop` or empty scans after a restart: the fork lost the deployed distributors. Run `build_test_set.py` again.
 * PRISM doctor says the credential is invalid: the header must be the API key from the API keys page (`pt-sk-...`), not the project id.

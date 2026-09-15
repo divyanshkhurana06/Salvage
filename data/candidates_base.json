@@ -1,0 +1,160 @@
+{
+  "chain": "base",
+  "block": 51323700,
+  "candidates": [
+    {
+      "token_id": 5849979,
+      "chain": "base",
+      "owner": "0x770A79A37b8ad9954D600316c83f678204E3Cc7B",
+      "token0": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "token1": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+      "fee_tier": 500,
+      "amount0_raw": 3840392,
+      "amount1_raw": 4972,
+      "usd": 7.71
+    },
+    {
+      "token_id": 5849998,
+      "chain": "base",
+      "owner": "0x21B3fB2dDfeE01d0a30Af51C7eCC0888589C9aA0",
+      "token0": "0x4200000000000000000000000000000000000006",
+      "token1": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "fee_tier": 500,
+      "amount0_raw": 648618277197841,
+      "amount1_raw": 1605643,
+      "usd": 3.24
+    },
+    {
+      "token_id": 5849948,
+      "chain": "base",
+      "owner": "0xC407870c29515737A9F1170659D09193fd66c286",
+      "token0": "0x4200000000000000000000000000000000000006",
+      "token1": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "fee_tier": 3000,
+      "amount0_raw": 217769995545179,
+      "amount1_raw": 618659,
+      "usd": 1.17
+    },
+    {
+      "token_id": 5849947,
+      "chain": "base",
+      "owner": "0x46220109EFa8537824A9c8b473Bc2F61d6645289",
+      "token0": "0x4200000000000000000000000000000000000006",
+      "token1": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "fee_tier": 3000,
+      "amount0_raw": 217677452259869,
+      "amount1_raw": 618396,
+      "usd": 1.17
+    },
+    {
+      "token_id": 5849951,
+      "chain": "base",
+      "owner": "0x747149760D53588FC5Cfd06F2c083eCeAF77486c",
+      "token0": "0x4200000000000000000000000000000000000006",
+      "token1": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "fee_tier": 3000,
+      "amount0_raw": 217297738485659,
+      "amount1_raw": 617318,
+      "usd": 1.16
+    },
+    {
+      "token_id": 5849949,
+      "chain": "base",
+      "owner": "0x602717D2EcCD63114f7f0a66D98dE643d9cCE5c9",
+      "token0": "0x4200000000000000000000000000000000000006",
+      "token1": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "fee_tier": 3000,
+      "amount0_raw": 217438981170710,
+      "amount1_raw": 617719,
+      "usd": 1.16
+    },
+    {
+      "token_id": 5997642,
+      "chain": "base",
+      "owner": "0x36AEAe0E411a1E28372e0d66f02E57744EbE7599",
+      "token0": "0x4200000000000000000000000000000000000006",
+      "token1": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "fee_tier": 3000,
+      "amount0_raw": 6765970776826,
+      "amount1_raw": 10144,
+      "usd": 0.03
+    },
+    {
+      "token_id": 5997614,
+      "chain": "base",
+      "owner": "0x7D27CDfBFcC878F7E7349e216d44204BFd2AFd55",
+      "token0": "0x4200000000000000000000000000000000000006",
+      "token1": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+      "fee_tier": 500,
+      "amount0_raw": 1730346224648,
+      "amount1_raw": 2,
+      "usd": 0.01
+    },
+    {
+      "token_id": 5997647,
+      "chain": "base",
+      "owner": "0xCd6262cc277Cdf6Fb8d7A834A16d1057E75F3358",
+      "token0": "0x4200000000000000000000000000000000000006",
+      "token1": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "fee_tier": 3000,
+      "amount0_raw": 57026146,
+      "amount1_raw": 1,
+      "usd": 0.0
+    },
+    {
+      "token_id": 5997637,
+      "chain": "base",
+      "owner": "0x8b26a899b50B65A05C8788234CB28d6ae4eF0737",
+      "token0": "0x4200000000000000000000000000000000000006",
+      "token1": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "fee_tier": 3000,
+      "amount0_raw": 1662994193,
+      "amount1_raw": 2,
+      "usd": 0.0
+    },
+    {
+      "token_id": 5997636,
+      "chain": "base",
+      "owner": "0xE55c552A34593C7b581AD1808E22408BddAe75C5",
+      "token0": "0x4200000000000000000000000000000000000006",
+      "token1": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "fee_tier": 3000,
+      "amount0_raw": 31578838915,
+      "amount1_raw": 47,
+      "usd": 0.0
+    },
+    {
+      "token_id": 5997633,
+      "chain": "base",
+      "owner": "0xdD393Ae4d690292ad62246C5b05411658E6c0725",
+      "token0": "0x4200000000000000000000000000000000000006",
+      "token1": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+      "fee_tier": 500,
+      "amount0_raw": 3428182280,
+      "amount1_raw": 2,
+      "usd": 0.0
+    },
+    {
+      "token_id": 5997611,
+      "chain": "base",
+      "owner": "0xD95ef3987A045Dbd311077F8b02661C7BD8Ce36A",
+      "token0": "0x4200000000000000000000000000000000000006",
+      "token1": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "fee_tier": 500,
+      "amount0_raw": 7074714,
+      "amount1_raw": 0,
+      "usd": 0.0
+    },
+    {
+      "token_id": 5997609,
+      "chain": "base",
+      "owner": "0x771E036708e248E5e9f65138A077E639bA7fB7c5",
+      "token0": "0x4200000000000000000000000000000000000006",
+      "token1": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "fee_tier": 3000,
+      "amount0_raw": 2590093470,
+      "amount1_raw": 8,
+      "usd": 0.0
+    }
+  ]
+}

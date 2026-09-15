@@ -20,6 +20,9 @@ class Settings:
     eth_rpc_url: str
     fork_rpc_url: str
     fork_block: int | None
+    base_rpc_url: str
+    base_fork_rpc_url: str
+    base_fork_block: int | None
     anthropic_api_key: str
     model_id: str
     prism_host: str
@@ -29,6 +32,15 @@ class Settings:
     elevenlabs_api_key: str
     elevenlabs_agent_id: str
     public_url: str
+    access_code: str
+
+    @property
+    def fork_urls(self) -> dict[str, str]:
+        """Local fork per chain name. Base is present only when an upstream for it is configured."""
+        out = {"ethereum": self.fork_rpc_url}
+        if self.base_rpc_url:
+            out["base"] = self.base_fork_rpc_url
+        return out
 
     @property
     def voice_enabled(self) -> bool:
@@ -53,6 +65,9 @@ def load_settings() -> Settings:
         eth_rpc_url=os.getenv("ETH_RPC_URL", "https://ethereum-rpc.publicnode.com"),
         fork_rpc_url=os.getenv("FORK_RPC_URL", "http://127.0.0.1:8545"),
         fork_block=_int_or_none(os.getenv("FORK_BLOCK", "")),
+        base_rpc_url=os.getenv("BASE_RPC_URL", "").strip(),
+        base_fork_rpc_url=os.getenv("BASE_FORK_RPC_URL", "http://127.0.0.1:8546"),
+        base_fork_block=_int_or_none(os.getenv("BASE_FORK_BLOCK", "")),
         anthropic_api_key=os.getenv("ANTHROPIC_API_KEY", ""),
         model_id=os.getenv("MODEL_ID", ""),
         prism_host=os.getenv("PRISMTRACE_HOST", "https://prism.blockconvey.com").rstrip("/"),
@@ -62,6 +77,7 @@ def load_settings() -> Settings:
         elevenlabs_api_key=os.getenv("ELEVENLABS_API_KEY", ""),
         elevenlabs_agent_id=os.getenv("ELEVENLABS_AGENT_ID", ""),
         public_url=os.getenv("PUBLIC_URL", "").rstrip("/"),
+        access_code=os.getenv("ACCESS_CODE", "").strip(),
     )
 
 

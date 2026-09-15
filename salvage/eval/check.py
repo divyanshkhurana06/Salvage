@@ -37,10 +37,11 @@ def check_turn(turn: dict, wallet: str | None, chain: Chain) -> dict | None:
 
     if "scan_wallet" not in names or not wallet:
         return None
+    from ..chain import available_chains
     from ..tools import airdrops, uniswap
 
-    fees = uniswap.scan_fees(wallet)
-    drops = airdrops.scan_airdrops(wallet)
+    fees = uniswap.scan_fees_all(wallet, available_chains() if chain.name == "ethereum" else [chain])
+    drops = airdrops.scan_airdrops(wallet, chain)
     truth = round(fees["usd_total"] + drops["usd_total"], 2)
     reported = reported_usd(reply)
     ok = (reported is None or reported < 1.0) if truth == 0 else (reported is not None and abs(reported - truth) / truth <= 0.05)

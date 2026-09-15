@@ -22,6 +22,21 @@ else
   started_fork=1
 fi
 
+# the second chain, when an upstream for it is configured
+if [ -n "${BASE_RPC_URL:-}" ]; then
+  BASE_PORT="${BASE_FORK_PORT:-8546}"
+  if curl -s -X POST -H 'Content-Type: application/json' \
+    --data '{"jsonrpc":"2.0","id":1,"method":"eth_blockNumber","params":[]}' "http://127.0.0.1:$BASE_PORT" | grep -q result; then
+    echo "base fork already running on port $BASE_PORT"
+  else
+    scripts/start_fork.sh background base || echo "base fork did not start, continuing on Ethereum only"
+  fi
+  if [ ! -f data/candidates_base.json ]; then
+    echo "probing Base for real positions with fees (a minute or two)"
+    .venv/bin/python scripts/probe_positions.py 12 --chain base || true
+  fi
+fi
+
 if [ ! -f contracts/out/MerkleAirdrop.sol/MerkleAirdrop.json ]; then
   echo "compiling the airdrop contract"
   (cd contracts && forge build)
