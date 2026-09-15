@@ -1,6 +1,6 @@
 # Salvage
 
-Demo : https://www.tella.tv/video/vid_cmu2ezmpc004s0agmde9tcvuq/view
+Demo : https://drive.google.com/file/d/157DDFppwOD_8xa75MQf1_LciQYiUtn6w/view?usp=sharing
 
 
 An AI agent that finds money a crypto wallet is owed but has never collected, and claims it, with every number verified against the chain before it is shown. Built for the ForgeAI Reliability Hackathon at graVITas 2026 (VIT Vellore), Track: AI for Finance. Team Ingenious.
