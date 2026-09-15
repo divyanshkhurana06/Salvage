@@ -42,6 +42,8 @@ Every agent turn sends three records to PRISM, all tied together by one session 
 2. spans: one per model call and one per tool call, with the tool input and output visible
 3. a trajectory: the ordered steps of the run
 
+Each turn also carries the chain's own verdict. Right after the reply, the turn is checked against the chain the same way the evaluation scores it (a scan turn by value, a claim turn by its receipts), and the result goes to PRISM with the trace: metadata `chain_check` (match or mismatch), `chain_check_kind`, `truth_usd`, `reported_usd`, plus a `check:chain` span in the timeline that is marked as an error when the reply and the chain disagree. So the traces that need attention can be filtered in PRISM instead of read one by one. Ingest is retried on timeouts and server errors so a hiccup never loses a turn.
+
 That is how the raw number the tool returned and the number the agent reported end up side by side in one PRISM trace. Failure clustering across the wallet set names the patterns; the same wallet set is replayed against v2 to prove the improvement. See `GUIDE.md` for the demo runbook.
 
 ## Results
@@ -117,7 +119,7 @@ Or bring everything up with one command (starts the fork if needed, compiles, bu
 scripts/demo.sh
 ```
 
-The UI has three modes: v1, v2, and **side by side**, which sends the same message to both versions and shows the two replies next to each other with every tool call tagged by version. Under every reply a badge reports what the chain actually says for that wallet, so a wrong number is caught on screen. The **Results** button shows the measured before and after table from the latest evaluation runs. **Speak** turns the browser's speech recognition on for one message and **Read aloud** speaks the replies; both use the browser's own engines, nothing external.
+The UI has three modes: v1, v2, and **side by side**, which sends the same message to both versions and shows the two replies next to each other with every tool call tagged by version. Under every reply a badge reports what the chain actually says for that wallet, so a wrong number is caught on screen, and a scoreboard above the conversation keeps the running count of checks that matched for each version. Wallets are grouped by what they hold (fees and airdrop, fees only, airdrop only, already claimed, window closed, nothing owed) with the true claimable value on each chip. The **Results** button shows the measured before and after table from the latest evaluation runs. **Speak** turns the browser's speech recognition on for one message and **Read aloud** speaks the replies; both use the browser's own engines, nothing external.
 
 Run the evaluation and print the before and after table:
 

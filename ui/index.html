@@ -7,58 +7,82 @@
 <style>
   :root { --green: #1B4332; --green2: #2D6A4F; --tint: #EEF4F0; --amber: #E9C46A; --amberTint: #FBF3DC; --ink: #1F2933; --muted: #5B6770; --line: #D6DEDA; --red: #9B2C2C; --redTint: #FBE9E7; }
   * { box-sizing: border-box; }
-  body { margin: 0; font-family: Calibri, "Segoe UI", Arial, sans-serif; color: var(--ink); background: #fff; }
-  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 24px; border-bottom: 1px solid var(--line); }
-  header h1 { margin: 0; font-family: Cambria, Georgia, serif; font-size: 26px; color: var(--green); letter-spacing: 2px; }
-  header .status { font-size: 12px; color: var(--muted); }
+  body { margin: 0; font-family: Calibri, "Segoe UI", Arial, sans-serif; color: var(--ink); background: #fff; font-size: 15px; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 24px; border-bottom: 1px solid var(--line); }
+  header .brand { display: flex; align-items: baseline; gap: 14px; }
+  header h1 { margin: 0; font-family: Cambria, Georgia, serif; font-size: 28px; color: var(--green); letter-spacing: 2px; }
+  header .tag-line { font-size: 13px; color: var(--muted); }
+  header .status { font-size: 12px; color: var(--muted); text-align: right; line-height: 1.4; }
   .toggle { display: inline-flex; border: 1px solid var(--green); border-radius: 8px; overflow: hidden; }
-  .toggle button { border: 0; background: #fff; color: var(--green); padding: 8px 14px; font-weight: 700; cursor: pointer; }
+  .toggle button { border: 0; background: #fff; color: var(--green); padding: 9px 16px; font-weight: 700; cursor: pointer; font-size: 14px; }
   .toggle button.on { background: var(--green); color: #fff; }
-  main { display: grid; grid-template-columns: 1.2fr 1fr; gap: 18px; padding: 16px 24px; height: calc(100vh - 60px); }
+  main { display: grid; grid-template-columns: 1.25fr 1fr; gap: 18px; padding: 14px 24px; height: calc(100vh - 62px); }
   .panel { border: 1px solid var(--line); border-radius: 12px; display: flex; flex-direction: column; min-height: 0; }
   .panel h2 { margin: 0; padding: 12px 16px; font-size: 14px; color: var(--green); border-bottom: 1px solid var(--line); background: var(--tint); border-radius: 12px 12px 0 0; }
+  .score { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+  .score .card { border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .score .card.hidden { display: none; }
+  .score .name { font-weight: 700; color: var(--green); font-size: 14px; }
+  .score .name small { display: block; font-weight: 400; color: var(--muted); font-size: 12px; }
+  .score .num { font-family: Cambria, Georgia, serif; font-size: 30px; font-weight: 700; color: var(--green); white-space: nowrap; }
+  .score .num.bad { color: var(--red); }
+  .score .num.idle { color: var(--muted); font-size: 16px; font-family: inherit; }
   .chats { flex: 1; display: grid; grid-template-columns: 1fr; min-height: 0; }
   .chats.compare { grid-template-columns: 1fr 1fr; }
   .chat { overflow: auto; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; border-right: 1px solid var(--line); }
   .chat:last-child { border-right: 0; }
   .chat .col { font-size: 12px; font-weight: 700; color: var(--green); border-bottom: 1px solid var(--line); padding-bottom: 6px; }
-  .msg { max-width: 92%; padding: 10px 12px; border-radius: 10px; white-space: pre-wrap; line-height: 1.35; font-size: 13.5px; }
+  .msg { max-width: 92%; padding: 10px 13px; border-radius: 10px; white-space: pre-wrap; line-height: 1.4; font-size: 15px; }
   .msg.user { align-self: flex-end; background: var(--green); color: #fff; }
   .msg.bot { align-self: flex-start; background: var(--tint); }
-  .msg.sys { align-self: center; color: var(--muted); font-size: 12px; background: transparent; }
-  .msg.check { align-self: flex-start; font-size: 12px; font-weight: 700; border: 1px solid; }
+  .msg.sys { align-self: center; color: var(--muted); font-size: 12.5px; background: transparent; }
+  .msg.sys.thinking::after { content: ''; animation: dots 1.2s steps(4, end) infinite; }
+  @keyframes dots { 0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75% { content: '...'; } }
+  .msg.check { align-self: flex-start; font-size: 13px; font-weight: 700; border: 1px solid; }
   .msg.check.good { color: var(--green); background: var(--tint); border-color: var(--green2); }
   .msg.check.bad { color: var(--red); background: var(--redTint); border-color: var(--red); }
   .composer { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--line); }
-  .composer input { flex: 1; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 14px; }
-  button.primary { background: var(--green); color: #fff; border: 0; border-radius: 8px; padding: 10px 14px; font-weight: 700; cursor: pointer; }
-  button.ghost { background: #fff; color: var(--green); border: 1px solid var(--green); border-radius: 8px; padding: 8px 12px; cursor: pointer; font-size: 13px; }
+  .composer input { flex: 1; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 15px; }
+  button.primary { background: var(--green); color: #fff; border: 0; border-radius: 8px; padding: 10px 16px; font-weight: 700; cursor: pointer; font-size: 14px; }
+  button.ghost { background: #fff; color: var(--green); border: 1px solid var(--green); border-radius: 8px; padding: 8px 12px; cursor: pointer; font-size: 13.5px; }
+  button:disabled { opacity: .5; cursor: wait; }
   .quick { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--line); }
-  .tools { flex: 1; overflow: auto; padding: 12px 16px; font-size: 13px; }
+  .quick .sep { flex: 1; }
+  .tools { flex: 1; overflow: auto; padding: 12px 16px; font-size: 13.5px; }
   .call { border: 1px solid var(--line); border-radius: 10px; margin-bottom: 10px; }
   .call summary { cursor: pointer; padding: 8px 12px; font-weight: 700; color: var(--green); }
-  .call pre { margin: 0; padding: 8px 12px; background: var(--tint); font-size: 12px; overflow: auto; max-height: 240px; white-space: pre-wrap; }
+  .call pre { margin: 0; padding: 8px 12px; background: var(--tint); font-size: 12.5px; overflow: auto; max-height: 240px; white-space: pre-wrap; }
   .call .in { border-bottom: 1px solid var(--line); background: #fff; }
-  .warn { background: var(--amberTint); border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; font-size: 13px; }
+  .warn { background: var(--amberTint); border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; font-size: 13.5px; }
+  .turnhead { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .turnhead code { font-size: 12px; background: #fff; padding: 2px 6px; border-radius: 5px; }
+  .turnhead button { font-size: 11px; padding: 2px 8px; }
   .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 6px; margin-right: 6px; color: #fff; background: var(--green2); }
   .tag.v1 { background: var(--red); }
-  .wallets { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 16px; border-bottom: 1px solid var(--line); max-height: 96px; overflow: auto; }
-  .wallets button { font-size: 12px; padding: 5px 8px; }
-  .meta { font-size: 12px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); }
-  details.changed { margin-bottom: 12px; font-size: 13px; }
+  .wallets { padding: 8px 16px; border-bottom: 1px solid var(--line); max-height: 176px; overflow: auto; }
+  .wallets .group { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 5px; }
+  .wallets .group label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; width: 118px; }
+  .wallets button { font-size: 12px; padding: 4px 8px; }
+  .wallets button.active { background: var(--green); color: #fff; }
+  .meta { font-size: 12px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .meta code { background: var(--tint); padding: 2px 6px; border-radius: 5px; }
+  details.changed { margin-bottom: 12px; font-size: 13.5px; }
   details.changed summary { cursor: pointer; font-weight: 700; color: var(--green); }
   details.changed ul { margin: 6px 0 0 18px; padding: 0; }
   #results { display: none; padding: 12px 24px 0; }
   #results.open { display: block; }
-  #results table { border-collapse: collapse; font-size: 13px; margin-bottom: 10px; }
+  #results table { border-collapse: collapse; font-size: 13.5px; margin-bottom: 10px; }
   #results th, #results td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; }
   #results th { background: var(--tint); color: var(--green); }
-  #results .note { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+  #results .note { font-size: 12.5px; color: var(--muted); margin-bottom: 8px; }
 </style>
 </head>
 <body>
 <header>
-  <h1>SALVAGE</h1>
+  <div class="brand">
+    <h1>SALVAGE</h1>
+    <span class="tag-line">finds value a wallet is owed and claims it. Every answer is checked against the chain.</span>
+  </div>
   <div class="toggle">
     <button id="m-v1" onclick="setMode('v1')">v1 naive</button>
     <button id="m-v2" class="on" onclick="setMode('v2')">v2 verified</button>
@@ -70,46 +94,54 @@
 <section id="results"></section>
 <main>
   <section class="panel">
-    <h2>Conversation</h2>
+    <h2>Conversation. Same model, same wallet, same question. Only the tools differ.</h2>
+    <div class="score">
+      <div class="card" id="score-v1"><div class="name">v1 naive<small>model converts units and prices, reports from memory</small></div><div class="num idle">no checks yet</div></div>
+      <div class="card" id="score-v2"><div class="name">v2 verified<small>tools convert and price, replies come from receipts</small></div><div class="num idle">no checks yet</div></div>
+    </div>
     <div class="wallets" id="wallets"></div>
     <div class="quick">
       <button class="ghost" onclick="ask('What can I claim in wallet ' + (currentWallet || '') + '?')">What can I claim?</button>
-      <button class="ghost" onclick="ask('Claim everything that is worth claiming.')">Claim everything worth claiming</button>
       <button class="ghost" onclick="ask('Is the gas worth it?')">Is the gas worth it?</button>
+      <button class="ghost" onclick="ask('Claim everything that is worth claiming.')">Claim everything worth claiming</button>
+      <span class="sep"></span>
+      <button class="ghost" id="shock" onclick="shock()">Crash the market</button>
       <button class="ghost" onclick="newSessions()">New session</button>
       <button class="ghost" onclick="resetFork()">Reset fork</button>
-      <button class="ghost" id="shock" onclick="shock()">Crash the market</button>
     </div>
     <div class="chats" id="chats">
       <div class="chat" id="chat-v1"><div class="col">v1 naive</div></div>
       <div class="chat" id="chat-v2"><div class="col">v2 verified</div></div>
     </div>
     <div class="composer">
-      <input id="input" placeholder="Paste a wallet address or ask something" onkeydown="if(event.key==='Enter') send()">
+      <input id="input" placeholder="Pick a wallet above, or paste an address, or ask something" onkeydown="if(event.key==='Enter') send()">
       <button class="ghost" id="mic" onclick="listen()" title="Speak instead of typing (Chrome and Safari)">Speak</button>
       <button class="ghost" id="voice" onclick="toggleVoice()" title="Read replies aloud">Read aloud: off</button>
-      <button class="primary" onclick="send()">Send</button>
+      <button class="primary" id="send" onclick="send()">Send</button>
     </div>
     <div class="meta" id="meta">no session yet</div>
   </section>
   <section class="panel">
-    <h2>What the agent actually did (tool calls, in order)</h2>
+    <h2>What the agent actually did (every call below is a span in PRISM)</h2>
     <div class="tools" id="tools"></div>
   </section>
 </main>
 <div id="voice-agent"></div>
 <script>
-let mode = 'v2', currentWallet = null;
+let mode = 'v2', currentWallet = null, busy = false;
 const sessions = { v1: null, v2: null };
+const tally = { v1: {ok: 0, total: 0}, v2: {ok: 0, total: 0} };
 let sessionPromise = null;
 const $ = id => document.getElementById(id);
+const NAMES = { v1: 'v1 naive', v2: 'v2 verified' };
+const COHORTS = [['both', 'fees and airdrop'], ['fees', 'fees only'], ['airdrop', 'airdrop only'], ['claimed_airdrop', 'already claimed'], ['expired_airdrop', 'window closed'], ['empty', 'nothing owed']];
 const TOOLS_HEADER = `<details class="changed"><summary>What changed in v2</summary><ul>
   <li>Amounts are converted with the token's decimals and priced with Chainlink in code, never by the model.</li>
   <li>Every claim is simulate, execute, read the receipt. The reply is written from the receipt.</li>
   <li>The agent scans again before acting; switching wallets resets the conversation state.</li>
   <li>Nothing to claim is a first class answer, with the gas estimate next to small amounts.</li>
 </ul></details>
-<div class="warn">Every tool call below is also sent to PRISM as a span. The numbers the agent reports on the left can be checked against the numbers the tools returned here.</div>`;
+<div class="warn">Sources on this fork: Uniswap v3 fees and merkle airdrops. Each turn also carries the chain's verdict into PRISM (metadata chain_check, span check:chain), so the traces that went wrong can be filtered, not hunted.</div>`;
 
 async function api(path, body) {
   const r = await fetch(path, body ? {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)} : {});
@@ -122,21 +154,31 @@ function add(v, kind, text) {
 }
 function layout() {
   $('chats').classList.toggle('compare', mode === 'compare');
-  $('chat-v1').style.display = versions().includes('v1') ? 'flex' : 'none';
-  $('chat-v2').style.display = versions().includes('v2') ? 'flex' : 'none';
+  for (const v of ['v1', 'v2']) {
+    $('chat-' + v).style.display = versions().includes(v) ? 'flex' : 'none';
+    $('score-' + v).classList.toggle('hidden', !versions().includes(v));
+  }
+  $('send').parentElement.parentElement.querySelector('.score').style.gridTemplateColumns = mode === 'compare' ? '1fr 1fr' : '1fr';
   for (const m of ['v1', 'v2', 'compare']) $('m-' + m).classList.toggle('on', m === mode);
 }
 function setMode(m) { mode = m; layout(); newSessions(); }
+function renderScore(v) {
+  const t = tally[v], el = $('score-' + v).querySelector('.num');
+  if (!t.total) { el.className = 'num idle'; el.textContent = 'no checks yet'; return; }
+  el.className = 'num' + (t.ok < t.total ? ' bad' : '');
+  el.textContent = t.ok + ' of ' + t.total + ' match';
+}
+function setBusy(b) { busy = b; $('send').disabled = b; for (const el of document.querySelectorAll('.quick button')) el.disabled = b; }
 async function newSessions() {
   sessions.v1 = sessions.v2 = null;
-  for (const v of ['v1', 'v2']) $('chat-' + v).innerHTML = '<div class="col">' + (v === 'v1' ? 'v1 naive' : 'v2 verified') + '</div>';
+  for (const v of ['v1', 'v2']) { $('chat-' + v).innerHTML = '<div class="col">' + NAMES[v] + '</div>'; tally[v] = {ok: 0, total: 0}; renderScore(v); }
   $('tools').innerHTML = TOOLS_HEADER;
   $('meta').textContent = 'starting session...';
   sessionPromise = Promise.all(versions().map(v => api('/api/session', {version: v}).then(s => { sessions[v] = s.session_id; add(v, 'sys', 'New ' + v + ' session started.'); })))
-    .then(() => { $('meta').textContent = 'PRISM session ids: ' + versions().map(v => sessions[v]).join('   |   '); });
+    .then(() => { $('meta').innerHTML = 'PRISM session ' + versions().map(v => '<code>' + sessions[v] + '</code>').join(' ') + ' <span>(one conversation each, agent ids salvage_v1 and salvage_v2)</span>'; });
   return sessionPromise;
 }
-async function resetFork() { const r = await api('/api/reset_fork', {}); await newSessions(); add(versions()[0], 'sys', 'Fork reset to block ' + r.block + '. Claims undone.'); }
+async function resetFork() { const r = await api('/api/reset_fork', {}); await newSessions(); add(versions()[0], 'sys', 'Fork reset to block ' + r.block + '. Claims undone, prices restored.'); crashed = false; $('shock').textContent = 'Crash the market'; loadStatus().catch(() => {}); }
 let crashed = false;
 async function shock() {
   crashed = !crashed;
@@ -146,37 +188,40 @@ async function shock() {
 }
 function ask(text) { $('input').value = text; send(); }
 async function send() {
-  const text = $('input').value.trim(); if (!text) return;
+  const text = $('input').value.trim(); if (!text || busy) return;
   if (!versions().every(v => sessions[v])) await (sessionPromise || newSessions());
   $('input').value = '';
-  const m = text.match(/0x[a-fA-F0-9]{40}/); if (m) currentWallet = m[0];
+  const m = text.match(/0x[a-fA-F0-9]{40}/); if (m) selectWallet(m[0]);
+  setBusy(true);
   await Promise.all(versions().map(async v => {
     add(v, 'user', text);
-    const pending = add(v, 'sys', 'thinking...');
+    const pending = add(v, 'sys thinking', v + ' is working');
     try {
       const t = await api('/api/chat', {session_id: sessions[v], message: text});
       pending.remove(); add(v, 'bot', t.reply);
-      if (t.active_wallet) currentWallet = t.active_wallet;
+      if (t.active_wallet) selectWallet(t.active_wallet);
       renderTools(v, t);
-      checkAgainstChain(v);
+      showCheck(v, t.check);
       if (v === versions()[versions().length - 1]) speak(t.reply);
     } catch (e) { pending.remove(); add(v, 'sys', 'error: ' + e.message); }
   }));
+  setBusy(false);
 }
-async function checkAgainstChain(v) {
-  try {
-    const c = await api('/api/check', {session_id: sessions[v]});
-    if (!c.available) return;
-    const d = document.createElement('div');
-    d.className = 'msg check ' + (c.ok ? 'good' : 'bad');
-    d.textContent = c.text;
-    $('chat-' + v).appendChild(d); $('chat-' + v).scrollTop = 1e9;
-  } catch (e) { /* the check is a courtesy, never block the chat */ }
+function showCheck(v, c) {
+  if (!c) return;
+  tally[v].total += 1; if (c.ok) tally[v].ok += 1; renderScore(v);
+  const d = document.createElement('div');
+  d.className = 'msg check ' + (c.ok ? 'good' : 'bad');
+  d.textContent = (c.ok ? '✓ ' : '✗ ') + c.text;
+  $('chat-' + v).appendChild(d); $('chat-' + v).scrollTop = 1e9;
 }
+function copyText(text, btn) { navigator.clipboard && navigator.clipboard.writeText(text).then(() => { const old = btn.textContent; btn.textContent = 'copied'; setTimeout(() => btn.textContent = old, 1200); }); }
 function renderTools(v, t) {
   const box = $('tools');
-  const head = document.createElement('div'); head.className = 'warn';
-  head.innerHTML = '<span class="tag ' + v + '">' + v + '</span> turn trace ' + t.trace_id + ' (' + t.latency_ms + ' ms)';
+  const head = document.createElement('div'); head.className = 'warn turnhead';
+  head.innerHTML = '<span class="tag ' + v + '">' + v + '</span> turn took ' + t.latency_ms + ' ms · trace <code>' + t.trace_id.slice(0, 8) + '…</code>';
+  const b = document.createElement('button'); b.className = 'ghost'; b.textContent = 'copy trace id'; b.onclick = () => copyText(t.trace_id, b); head.appendChild(b);
+  if (t.check) { const s = document.createElement('span'); s.style.fontWeight = '700'; s.style.color = t.check.ok ? 'var(--green)' : 'var(--red)'; s.textContent = 'check:chain ' + (t.check.ok ? 'match' : 'mismatch'); head.appendChild(s); }
   box.appendChild(head);
   if (!t.tool_calls.length) { const d = document.createElement('div'); d.textContent = 'no tool calls this turn'; box.appendChild(d); }
   for (const c of t.tool_calls) {
@@ -187,6 +232,10 @@ function renderTools(v, t) {
     box.appendChild(det);
   }
   box.scrollTop = 1e9;
+}
+function selectWallet(address) {
+  currentWallet = address;
+  for (const b of document.querySelectorAll('.wallets button')) b.classList.toggle('active', b.title.toLowerCase() === address.toLowerCase());
 }
 // ---------- voice, using the browser's own speech engines, nothing external ----------
 let readAloud = false;
@@ -256,11 +305,16 @@ async function toggleResults() {
   } catch (e) { box.innerHTML = '<div class="note">no evaluation runs yet (python -m salvage.cli eval v1, eval v2)</div>'; }
   box.classList.add('open');
 }
+async function loadStatus() {
+  const s = await api('/api/status');
+  const forkNote = !s.fork.ok ? '<b>down</b>' : 'block ' + s.fork.block + (s.fork.txs_since_build ? ' · <b style="color:var(--red)">' + s.fork.txs_since_build + ' claim' + (s.fork.txs_since_build > 1 ? 's' : '') + ' mined since the wallet set was built, press Reset fork</b>' : ' · clean');
+  $('status').innerHTML = 'fork ' + forkNote + ' · model ' + (s.model ? 'ok' : '<b>missing</b>') + ' · PRISM ' + (s.prism ? 'live' : 'offline log only') + (s.voice_agent_id ? ' · voice agent on' : '') + '<br>Ethereum mainnet fork, real positions, real contracts, test money';
+  return s;
+}
 async function init() {
   layout();
   try {
-    const s = await api('/api/status');
-    $('status').textContent = 'fork ' + (s.fork.ok ? 'block ' + s.fork.block : 'down') + ' · model ' + (s.model ? 'ok' : 'missing') + ' · PRISM ' + (s.prism ? 'on' : 'offline log only') + (s.voice_agent_id ? ' · voice agent on' : '');
+    const s = await loadStatus();
     if (s.voice_agent_id) {
       // the ElevenLabs voice agent: talks to the user in the browser and calls this server's /api/voice tools
       const el = document.createElement('elevenlabs-convai'); el.setAttribute('agent-id', s.voice_agent_id);
@@ -268,11 +322,18 @@ async function init() {
       const sc = document.createElement('script'); sc.src = 'https://unpkg.com/@elevenlabs/convai-widget-embed'; sc.async = true; document.body.appendChild(sc);
     }
     const ws = await api('/api/wallets');
-    for (const w of ws) {
-      const b = document.createElement('button'); b.className = 'ghost';
-      b.textContent = w.label + ' ($' + w.truth_usd.toFixed(2) + ')'; b.title = w.address;
-      b.onclick = () => { currentWallet = w.address; $('input').value = 'What can I claim in wallet ' + w.address + '?'; };
-      $('wallets').appendChild(b);
+    for (const [cohort, title] of COHORTS) {
+      const group = ws.filter(w => w.cohort === cohort);
+      if (!group.length) continue;
+      const row = document.createElement('div'); row.className = 'group';
+      const label = document.createElement('label'); label.textContent = title; row.appendChild(label);
+      for (const w of group) {
+        const b = document.createElement('button'); b.className = 'ghost';
+        b.textContent = w.label.replace('_airdrop', '') + ' · $' + w.truth_usd.toFixed(2); b.title = w.address;
+        b.onclick = () => { selectWallet(w.address); $('input').value = 'What can I claim in wallet ' + w.address + '?'; };
+        row.appendChild(b);
+      }
+      $('wallets').appendChild(row);
     }
   } catch (e) { $('status').textContent = 'status unavailable'; }
   await newSessions();

@@ -56,6 +56,8 @@ For every turn, the tracer sends three things to PRISM under one session id:
 2. spans: one per model call and one per tool call, each with input and output
 3. a trajectory: the ordered steps, for PRISM's trajectory view
 
+There is a fourth thing, and it is the one to point at on stage. As soon as a turn ends, the agent checks its own reply against the chain (`salvage/eval/check.py`): for a scan turn, the dollar total it reported against what the verified tools compute; for a claim turn, what it said happened against the transaction receipts. The verdict rides along with the trace as metadata (`chain_check` is `match` or `mismatch`, with `truth_usd` and `reported_usd`) and as a `check:chain` span that is red in the timeline when they disagree. In PRISM, filtering traces on `chain_check = mismatch` lists exactly the turns where the agent said something the chain does not back. That is the difference between reading replies and finding failures.
+
 Without a PRISM key nothing is sent, and every record still goes to `data/runs/prism_offline.jsonl`, so you can inspect a run locally.
 
 Two agent ids exist in PRISM: `salvage_v1` and `salvage_v2`. Session ids look like `v1_both_03_<run id>`, so a session is readable in the Sessions view without any filter.
@@ -103,7 +105,7 @@ All of these use the venv: prefix with `.venv/bin/` or activate it.
 
 Two screens: the Salvage UI on the left, PRISM on the right. `scripts/demo.sh` brings the UI up; press **Reset fork** before you start so rehearsal claims are undone.
 
-The fastest version of the whole story is **side by side** mode: pick `fees_08` (worth $0.50), ask "What can I claim?", and watch v1 announce millions on the left while v2 says $0.50 and that gas costs more than that on the right. Then `expired_10` and "Claim everything that is worth claiming": v1 says claimed with a transaction hash, v2 says the window is closed. The tool panel tags every call with the version, so the raw integer and the receipt are on screen the whole time.
+The fastest version of the whole story is **side by side** mode: pick `fees_08` (worth $0.50), ask "What can I claim?", and watch v1 announce millions on the left while v2 says $0.50 and that gas costs more than that on the right. The scoreboard above the chat turns red for v1 (0 of 1 match) and green for v2 (1 of 1 match) as the badges land. Then `expired_10` and "Claim everything that is worth claiming": v1 says claimed with a transaction hash, v2 says the window is closed. The tool panel tags every call with the version, so the raw integer and the receipt are on screen the whole time.
 
 The longer version:
 

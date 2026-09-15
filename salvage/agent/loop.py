@@ -37,10 +37,12 @@ class Agent:
         self.user_id = user_id
         self.metadata = dict(metadata or {})
         self.state: dict = {"active_wallet": None}
+        self.chain = chain
         if executors is None:
             from ..chain import get_chain
 
-            executors = Executors(version, chain or get_chain(), self.state).mapping()
+            self.chain = chain or get_chain()
+            executors = Executors(version, self.chain, self.state).mapping()
         self.executors = executors
         self.tools = tools_for(version)
         self.system = V1_SYSTEM if version == "v1" else V2_SYSTEM
@@ -100,17 +102,49 @@ class Agent:
         if self.version == "v2" and wallet_before and wallet_after and wallet_before != wallet_after:
             self.messages = self.messages[turn_start:]
 
-        trace_id = self.tracer.record_turn(
+        turn = {"user": user_text, "reply": text, "tool_calls": tool_calls, "latency_ms": latency_ms,
+                "tokens_in": tokens_in, "tokens_out": tokens_out, "check": None}
+        metadata = {**self.metadata, "agent_version": self.version, "user_identifier": self.user_id, "wallet": wallet_after or ""}
+
+        # the chain's verdict on this turn travels with the trace: as metadata, and as a span in the timeline
+        check = self._check(turn, wallet_after)
+        if check is not None:
+            turn["check"] = check
+            metadata.update({"chain_check": "match" if check["ok"] else "mismatch", "chain_check_kind": check["kind"]})
+            for key in ("truth_usd", "reported_usd", "usd_received"):
+                if check.get(key) is not None:
+                    metadata[key] = check[key]
+            spans.append(Span(
+                name="check:chain", span_type="tool", input_text=json.dumps({"kind": check["kind"], "wallet": wallet_after}),
+                output_text=check["text"], start_time=check["start_time"], end_time=check["end_time"], duration_ms=check["duration_ms"],
+                status="ok" if check["ok"] else "error", error_message=None if check["ok"] else check["text"][:300],
+            ))
+
+        turn["trace_id"] = self.tracer.record_turn(
             session_id=self.session_id, agent_id=self.agent_id, agent_name=self.agent_name, model=self.llm.model_id,
-            input_messages=self.messages[:-1], output_text=text, latency_ms=latency_ms, spans=spans,
-            metadata={**self.metadata, "agent_version": self.version, "user_identifier": self.user_id, "wallet": wallet_after or ""},
+            input_messages=self.messages[:-1], output_text=text, latency_ms=latency_ms, spans=spans, metadata=metadata,
             tokens_in=tokens_in, tokens_out=tokens_out,
-            final_status="error" if any(t["error"] for t in tool_calls) else "success",
+            final_status="error" if any(t["error"] for t in tool_calls) or (check is not None and not check["ok"]) else "success",
         )
-        turn = {"user": user_text, "reply": text, "tool_calls": tool_calls, "trace_id": trace_id, "latency_ms": latency_ms,
-                "tokens_in": tokens_in, "tokens_out": tokens_out}
         self.turns.append(turn)
         return turn
+
+    def _check(self, turn: dict, wallet: str | None) -> dict | None:
+        """Compare the reply with the chain. Only when the agent runs against a real fork; never breaks a turn."""
+        if self.chain is None:
+            return None
+        from ..eval.check import check_turn
+
+        clock = SpanClock()
+        try:
+            result = check_turn(turn, wallet, self.chain)
+        except Exception as exc:
+            print(f"[check] skipped: {exc}")
+            return None
+        if result is None:
+            return None
+        end, dur = clock.finish()
+        return {**result, "start_time": clock.start_iso, "end_time": end, "duration_ms": dur}
 
     # ---------- helpers ----------
     def _execute(self, name: str, args: dict) -> tuple[object, bool]:

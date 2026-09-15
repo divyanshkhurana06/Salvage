@@ -53,6 +53,12 @@ def status() -> dict:
     try:
         chain = get_chain()
         fork = {"ok": True, "block": chain.block_number}
+        # the wallet set records the block it was built at; any block after that is a transaction mined since
+        path = DATA_DIR / "wallets.json"
+        if path.exists():
+            built_at = json.loads(path.read_text()).get("block")
+            fork["built_at"] = built_at
+            fork["txs_since_build"] = max(0, chain.block_number - built_at) if built_at else None
     except Exception as exc:
         fork = {"ok": False, "error": str(exc)}
     return {"fork": fork, "model": settings.llm_enabled, "prism": settings.prism_enabled, "prism_project": settings.prism_project_id,
@@ -83,8 +89,10 @@ def chat(body: ChatIn) -> dict:
     if agent is None:
         raise HTTPException(404, "unknown session, create one first")
     turn = agent.chat(body.message)
+    check = turn.get("check")
     return {"reply": turn["reply"], "tool_calls": turn["tool_calls"], "trace_id": turn["trace_id"],
-            "latency_ms": turn["latency_ms"], "active_wallet": agent.active_wallet, "session_id": agent.session_id}
+            "latency_ms": turn["latency_ms"], "active_wallet": agent.active_wallet, "session_id": agent.session_id,
+            "check": None if check is None else {k: check[k] for k in ("kind", "ok", "text") if k in check}}
 
 
 class CheckIn(BaseModel):
@@ -93,48 +101,14 @@ class CheckIn(BaseModel):
 
 @app.post("/api/check")
 def check_against_chain(body: CheckIn) -> dict:
-    """Compare what the agent just said with what the verified tools compute for the active wallet."""
-    from .eval.runner import reported_usd
-    from .tools import airdrops, uniswap
-
+    """The chain's verdict on the last turn of a session (already computed when the turn ran)."""
     agent = SESSIONS.get(body.session_id)
     if agent is None:
         raise HTTPException(404, "unknown session")
-    wallet = agent.active_wallet
-    if not wallet or not agent.turns:
+    check = agent.turns[-1].get("check") if agent.turns else None
+    if check is None:
         return {"available": False}
-    from .eval.runner import FAILURE_WORDS, SUCCESS_WORDS, tx_outcomes
-
-    last = agent.turns[-1]
-    names = [c["name"] for c in last["tool_calls"]]
-
-    # a claim turn is judged by its receipts: did the transactions the agent reported actually succeed
-    if any(n in ("collect_fees", "claim_airdrop") for n in names):
-        outcomes = tx_outcomes(last, get_chain())
-        any_success = any(o["status"] == "success" for o in outcomes)
-        positive, negative = bool(SUCCESS_WORDS.search(last["reply"])), bool(FAILURE_WORDS.search(last["reply"]))
-        received = round(sum((o.get("usd_received") or 0.0) for o in outcomes), 2)
-        summary = ", ".join(f"{o['tool']} {o['status']}" for o in outcomes)
-        if positive and not negative and not any_success:
-            return {"available": True, "kind": "receipts", "ok": False,
-                    "text": f"Does not match the receipts. The agent said it claimed, but every transaction failed: {summary}."}
-        if not positive and any_success:
-            return {"available": True, "kind": "receipts", "ok": False,
-                    "text": f"Does not match the receipts. A transaction succeeded ({summary}) but the agent did not report it."}
-        text = f"Matches the receipts: {summary}" + (f", ${received:,.2f} received." if received else ".")
-        return {"available": True, "kind": "receipts", "ok": True, "text": text}
-
-    # a scan turn is judged by value: does the reported total match what the chain says is claimable
-    if "scan_wallet" not in names:
-        return {"available": False}
-    fees = uniswap.scan_fees(wallet)
-    drops = airdrops.scan_airdrops(wallet)
-    truth = round(fees["usd_total"] + drops["usd_total"], 2)
-    reported = reported_usd(last["reply"])
-    ok = (reported is None or reported < 1.0) if truth == 0 else (reported is not None and abs(reported - truth) / truth <= 0.05)
-    said = "no dollar figure" if reported is None else f"${reported:,.2f}"
-    text = ("Matches the chain. " if ok else "Does not match the chain. ") + f"Chain says ${truth:,.2f} claimable, the agent said {said}."
-    return {"available": True, "kind": "value", "ok": ok, "text": text, "wallet": wallet, "truth_usd": truth, "reported_usd": reported}
+    return {"available": True, **{k: v for k, v in check.items() if k not in ("start_time", "end_time", "duration_ms")}}
 
 
 class ShockIn(BaseModel):

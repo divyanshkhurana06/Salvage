@@ -54,6 +54,40 @@ def test_two_turns_with_tools_and_offline_tracing(tmp_path, monkeypatch):
     assert '"tool:scan_wallet"' in lines[0] and '"tool:collect_fees"' in lines[1]
 
 
+def test_chain_check_travels_with_the_trace(monkeypatch):
+    """When the agent runs against a chain, the verdict on each turn is attached to the trace as metadata and a span."""
+    import salvage.eval.check as check_mod
+
+    recorded = []
+
+    class Spy(Tracer):
+        def record_turn(self, **kw):
+            recorded.append(kw)
+            return "trace"
+
+    monkeypatch.setattr(check_mod, "check_turn", lambda turn, wallet, chain: {
+        "kind": "value", "ok": False, "text": "Does not match the chain. Chain says $0.08 claimable, the agent said $4,801.00.",
+        "wallet": wallet, "truth_usd": 0.08, "reported_usd": 4801.0})
+    state = {"active_wallet": None}
+    agent = Agent("v1", llm=ScriptedLLM(script), executors=fake_executors(state), tracer=Spy(enabled=False), session_id="s", chain=object())
+    agent.state = state
+    t = agent.chat("What can I claim in wallet 0xabab?")
+
+    assert t["check"]["ok"] is False and t["check"]["kind"] == "value"
+    meta = recorded[-1]["metadata"]
+    assert meta["chain_check"] == "mismatch" and meta["truth_usd"] == 0.08 and meta["reported_usd"] == 4801.0
+    assert recorded[-1]["final_status"] == "error"
+    check_span = [s for s in recorded[-1]["spans"] if s.name == "check:chain"][0]
+    assert check_span.status == "error" and "Does not match" in check_span.output_text
+
+
+def test_no_chain_means_no_check():
+    state = {"active_wallet": None}
+    agent = Agent("v2", llm=ScriptedLLM(script), executors=fake_executors(state), tracer=Tracer(enabled=False), session_id="s2")
+    agent.state = state
+    assert agent.chat("What can I claim in wallet 0xabab?")["check"] is None
+
+
 def test_unknown_tool_is_reported_as_error_not_crash():
     def script_bad(messages, tools):
         if isinstance(messages[-1]["content"], str):

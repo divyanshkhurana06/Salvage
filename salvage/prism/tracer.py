@@ -171,14 +171,15 @@ class Tracer:
         if not self.enabled:
             return trace_id
 
-        self._pt.trace_llm(
-            model=model, input_messages=flat_inputs, output=output_text, latency_ms=latency_ms,
-            token_count_input=tokens_in, token_count_output=tokens_out, trace_id=trace_id,
-            agent_id=agent_id, agent_name=agent_name, session_id=session_id, metadata=meta,
-        )
-        # the SDK posts on a background thread; wait for it so the trace exists before its spans
-        # arrive under the same trace_id, otherwise the two inserts can collide
-        self._pt.flush(timeout=15)
+        # the trace is posted here rather than through the SDK's background thread, so it is
+        # retried on a transient failure and is known to exist before its spans arrive
+        trace_payload = {
+            "project_id": self.project_id, "trace_id": trace_id, "model": model, "input_messages": flat_inputs,
+            "output_message": output_text, "latency_ms": latency_ms, "token_count_input": tokens_in,
+            "token_count_output": tokens_out, "agent_id": agent_id, "agent_name": agent_name,
+            "session_id": session_id, "metadata": meta,
+        }
+        self._post("/api/traces", trace_payload)
 
         span_payload = {
             "trace_id": trace_id, "project_id": self.project_id, "session_id": session_id,
@@ -190,12 +191,7 @@ class Tracer:
                 "end_time": spans[-1].end_time if spans else _now_iso(), "duration_ms": latency_ms, "status": "ok",
             }] + [s.to_payload(root_span_id) for s in spans],
         }
-        try:
-            r = self._http.post("/api/spans/ingest", json=span_payload)
-            if r.status_code >= 300:
-                print(f"[prism] spans ingest {r.status_code}: {r.text[:200]}")
-        except Exception as exc:
-            print(f"[prism] spans ingest failed: {exc}")
+        self._post("/api/spans/ingest", span_payload)
 
         steps = []
         for s in spans:
@@ -208,12 +204,30 @@ class Tracer:
                               "input_summary": s.input_text[:200], "output_summary": s.output_text[:200],
                               "duration_ms": int(s.duration_ms), "status": "success" if s.status == "ok" else "error"})
         steps.append({"step_type": "final_answer", "label": "reply", "output_summary": output_text[:200], "duration_ms": 0})
-        try:
-            self._pt.submit_trajectory(steps, agent_name=agent_name, agent_id=agent_id, conversation_id=session_id,
-                                       request_id=trace_id, model=model, final_status=final_status)
-        except Exception as exc:
-            print(f"[prism] trajectory failed: {exc}")
+        for attempt in range(3):
+            try:
+                self._pt.submit_trajectory(steps, agent_name=agent_name, agent_id=agent_id, conversation_id=session_id,
+                                           request_id=trace_id, model=model, final_status=final_status)
+                break
+            except Exception as exc:
+                print(f"[prism] trajectory failed (attempt {attempt + 1}): {exc}")
+                time.sleep(1 + attempt)
         return trace_id
+
+    def _post(self, path: str, payload: dict) -> bool:
+        """POST with retries on timeouts and server errors, so one ingest hiccup never loses a turn."""
+        for attempt in range(3):
+            try:
+                r = self._http.post(path, json=payload)
+                if r.status_code < 300:
+                    return True
+                print(f"[prism] {path} {r.status_code} (attempt {attempt + 1}): {r.text[:200]}")
+                if r.status_code < 500:
+                    return False
+            except Exception as exc:
+                print(f"[prism] {path} failed (attempt {attempt + 1}): {exc}")
+            time.sleep(1 + attempt)
+        return False
 
     def close(self) -> None:
         if self._pt is not None:
