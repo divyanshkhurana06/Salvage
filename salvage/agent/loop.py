@@ -130,6 +130,8 @@ class Agent:
             input_messages=self.messages[:-1], output_text=text, latency_ms=latency_ms, spans=spans, metadata=metadata,
             tokens_in=tokens_in, tokens_out=tokens_out,
             final_status="error" if any(t["error"] for t in tool_calls) else "success",
+            annotation=None if check is None else {"verdict": "chain match" if check["ok"] else "chain mismatch",
+                                                    "quality_score": 100 if check["ok"] else 0, "notes": check["text"]},
         )
         self.turns.append(turn)
         return turn

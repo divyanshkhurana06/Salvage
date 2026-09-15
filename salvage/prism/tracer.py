@@ -153,6 +153,7 @@ class Tracer:
         tokens_in: int = 0,
         tokens_out: int = 0,
         final_status: str = "success",
+        annotation: dict | None = None,
     ) -> str:
         trace_id = str(uuid.uuid4())
         root_span_id = str(uuid.uuid4())
@@ -180,6 +181,11 @@ class Tracer:
             "session_id": session_id, "metadata": meta,
         }
         self._post("/api/traces", trace_payload)
+        # the chain's verdict as a PRISM annotation too: annotations are shown on the trace page and listed on the Annotations
+        # page, where a filter on the verdict gives the bad turns without reading metadata
+        if annotation:
+            self._post("/api/annotations", {"project_id": self.project_id, "trace_id": trace_id, "reviewer_email": "chain-check@salvage",
+                                            "verdict": annotation["verdict"], "quality_score": annotation.get("quality_score"), "notes": annotation.get("notes", "")})
 
         span_payload = {
             "trace_id": trace_id, "project_id": self.project_id, "session_id": session_id,
