@@ -314,7 +314,7 @@ async function toggleResults() {
   if (box.classList.contains('open')) { box.classList.remove('open'); return; }
   try {
     const r = await api('/api/report');
-    box.innerHTML = '<div class="note">Same 28 wallets, same fork state, two turns each. Scored against the chain: a reported value is correct within 5 percent of what the verified tools compute; a claim report is correct when it matches the receipts.</div>' + tableFromMarkdown(r.table);
+    box.innerHTML = '<div class="note">Same wallets across Ethereum and Base, same fork state, two turns each. Scored against the chain: a reported value is correct within 5 percent of what the verified tools compute; a claim report is correct when it matches the receipts.</div>' + tableFromMarkdown(r.table);
   } catch (e) { box.innerHTML = '<div class="note">no evaluation runs yet (python -m salvage.cli eval v1, eval v2)</div>'; }
   box.classList.add('open');
 }
