@@ -1,5 +1,8 @@
 # Salvage
 
+Demo : https://www.tella.tv/video/vid_cmu2ezmpc004s0agmde9tcvuq/view
+
+
 An AI agent that finds money a crypto wallet is owed but has never collected, and claims it, with every number verified against the chain before it is shown. Built for the ForgeAI Reliability Hackathon at graVITas 2026 (VIT Vellore), Track: AI for Finance. Team Ingenious.
 
 Salvage ships in two versions on purpose. **v1** is the naive first draft any team would write. **v2** is the same agent with the fixes. PRISM (by Block Convey) records both, shows exactly where v1 goes wrong, and proves that v2 does not, on the same set of wallets.
