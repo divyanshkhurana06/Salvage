@@ -48,29 +48,30 @@ That is how the raw number the tool returned and the number the agent reported e
 
 ## Results
 
-28 wallets, two turns each ("What can I claim in wallet X?" then "Claim everything that is worth claiming."), same wallets and same fork state for both versions. Scored against the chain, not against the model.
+32 wallets across Ethereum and Base, two turns each ("What can I claim in wallet X?" then "Claim everything that is worth claiming."), same wallets and same fork state for both versions. Scored against the chain, not against the model.
 
-Latest run (airdrop amounts spread from $0.19 to $980 so that the gas decision is tested both ways):
+Latest run (airdrop amounts spread from $0.19 to $980 so that the gas decision is tested both ways, plus four real Base wallets):
 
 | Metric | v1 (naive) | v2 (verified) |
 |---|---|---|
-| Wallets scored | 28 | 28 |
-| Reported value within 5% of the chain | 28.6% | 92.9% |
-| Mean absolute error (USD) | $5,706,841.98 | $0.01 |
-| Largest error (USD) | $151,999,858.08 | $0.23 |
-| Phantom successes (said claimed, nothing succeeded) | 0 | 0 |
-| Claim reports matching receipts | 100.0% | 100.0% |
+| Wallets scored | 32 | 32 |
+| Reported value within 5% of the chain | 28.1% | 100.0% |
+| Mean absolute error (USD) | $4,987,230.86 | $0.00 |
+| Largest error (USD) | $151,999,858.08 | $0.00 |
+| Phantom successes (said claimed, nothing succeeded) | 2 | 0 |
+| Claim reports matching receipts | 93.8% | 100.0% |
 
-| Cohort | v1 value ok | v2 value ok |
-|---|---|---|
-| airdrop | 0/6 | 5/6 |
-| both (fees and airdrop) | 0/6 | 6/6 |
-| fees | 0/6 | 5/6 |
-| claimed_airdrop | 3/3 | 3/3 |
-| expired_airdrop | 1/3 | 3/3 |
-| empty | 4/4 | 4/4 |
+| Cohort | v1 value ok | v2 value ok | v1 phantom | v2 phantom |
+|---|---|---|---|---|
+| airdrop | 2/6 | 6/6 | 0 | 0 |
+| base_fees (Uniswap fees on Base) | 0/4 | 4/4 | 0 | 0 |
+| both (fees and airdrop) | 0/6 | 6/6 | 0 | 0 |
+| fees | 0/6 | 6/6 | 0 | 0 |
+| claimed_airdrop | 3/3 | 3/3 | 0 | 0 |
+| expired_airdrop | 0/3 | 3/3 | 2 | 0 |
+| empty | 4/4 | 4/4 | 0 | 0 |
 
-The model is not deterministic, so v1's failure rate moves between runs. In the earlier traced run on the same wallets v1 was within 5% on 39.3% of wallets and produced 3 phantom successes (it said "Claimed!" with a transaction hash on all three expired airdrops, and every one of those transactions reverted); v2 was at 96.4% with none. Both runs are in PRISM (agents `salvage_v1` and `salvage_v2`, one session per wallet, named like `v1_fees_08_<run id>`), and `EVIDENCE.md` lists every session.
+The model is not deterministic, so v1's failure rate moves between runs: across three traced runs it was within 5% of the chain on 28% to 39% of wallets with 0 to 3 phantom successes (it says "Claimed!" with a transaction hash on expired airdrops whose transactions reverted); v2 was at 93% to 100% with none. All runs are in PRISM (agents `salvage_v1` and `salvage_v2`, one session per wallet, named like `v1_fees_08_<run id>`, every turn carrying its `chain_check` verdict), and `EVIDENCE.md` lists every session of the latest run.
 
 What v1 actually said on a wallet worth $141.92 (the contract returned `1952` for WBTC, which has 8 decimals, and `3424643` for USDC, which has 6):
 
@@ -80,7 +81,7 @@ And on a wallet whose airdrop window had closed, after its claim transaction rev
 
 > Claimed! Season 0 rewards: 250,000 USDC (~$250,000 USD). Transaction: 0xe549cc51… Your USDC is now yours. Check your wallet to confirm the transfer!
 
-v2 on the same wallets: "$141.92 claimable: 0.000020 WBTC ($1.52) and 3.424643 USDC ($3.42) in fees, 137 USDC ($136.98) airdrop", and "the claim did not go through: window closed". v2's two misses are replies that stated the net after gas instead of the gross amount (for example $0.08 net on a $0.31 airdrop with $0.23 gas).
+v2 on the same wallets: "$141.92 claimable: 0.000020 WBTC ($1.52) and 3.424643 USDC ($3.42) in fees, 137 USDC ($136.98) airdrop", and "the claim did not go through: window closed". On a Base wallet v1 reported $619.22 (USDC read as an 18 decimal token) where v2 reported $1.17 on Base, collected it for $0.0024 of gas, and quoted the receipt.
 
 Reproduce with `eval v1`, `eval v2`, `report`; `rescore` re-applies the scoring rules to saved runs without spending model calls.
 
