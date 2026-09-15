@@ -42,7 +42,7 @@ Every agent turn sends three records to PRISM, all tied together by one session 
 2. spans: one per model call and one per tool call, with the tool input and output visible
 3. a trajectory: the ordered steps of the run
 
-Each turn also carries the chain's own verdict. Right after the reply, the turn is checked against the chain the same way the evaluation scores it (a scan turn by value, a claim turn by its receipts), and the result goes to PRISM with the trace: metadata `chain_check` (match or mismatch), `chain_check_kind`, `truth_usd`, `reported_usd`, plus a `check:chain` span in the timeline that is marked as an error when the reply and the chain disagree. So the traces that need attention can be filtered in PRISM instead of read one by one. Ingest is retried on timeouts and server errors so a hiccup never loses a turn.
+Each turn also carries the chain's own verdict. Right after the reply, the turn is checked against the chain the same way the evaluation scores it (a scan turn by value, a claim turn by its receipts), and the result goes to PRISM with the trace: metadata `chain_check` (match or mismatch), `chain_check_kind`, `truth_usd`, `reported_usd`, plus a `check:chain:match` or `check:chain:mismatch` span in the timeline. So the traces that need attention can be filtered in PRISM instead of read one by one. Ingest is retried on timeouts and server errors so a hiccup never loses a turn.
 
 That is how the raw number the tool returned and the number the agent reported end up side by side in one PRISM trace. Failure clustering across the wallet set names the patterns; the same wallet set is replayed against v2 to prove the improvement. See `GUIDE.md` for the demo runbook.
 

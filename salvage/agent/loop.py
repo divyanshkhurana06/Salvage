@@ -114,17 +114,19 @@ class Agent:
             for key in ("truth_usd", "reported_usd", "usd_received"):
                 if check.get(key) is not None:
                     metadata[key] = check[key]
+            # the verdict is in the span name and the metadata, never in the run status: a run PRISM sees as
+            # failed triggers its automatic Root Cause analysis, which costs credits on every batch of failures
             spans.append(Span(
-                name="check:chain", span_type="tool", input_text=json.dumps({"kind": check["kind"], "wallet": wallet_after}),
-                output_text=check["text"], start_time=check["start_time"], end_time=check["end_time"], duration_ms=check["duration_ms"],
-                status="ok" if check["ok"] else "error", error_message=None if check["ok"] else check["text"][:300],
+                name="check:chain:" + ("match" if check["ok"] else "mismatch"), span_type="tool",
+                input_text=json.dumps({"kind": check["kind"], "wallet": wallet_after}), output_text=check["text"],
+                start_time=check["start_time"], end_time=check["end_time"], duration_ms=check["duration_ms"],
             ))
 
         turn["trace_id"] = self.tracer.record_turn(
             session_id=self.session_id, agent_id=self.agent_id, agent_name=self.agent_name, model=self.llm.model_id,
             input_messages=self.messages[:-1], output_text=text, latency_ms=latency_ms, spans=spans, metadata=metadata,
             tokens_in=tokens_in, tokens_out=tokens_out,
-            final_status="error" if any(t["error"] for t in tool_calls) or (check is not None and not check["ok"]) else "success",
+            final_status="error" if any(t["error"] for t in tool_calls) else "success",
         )
         self.turns.append(turn)
         return turn
