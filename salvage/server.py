@@ -161,6 +161,42 @@ def reset_fork() -> dict:
     return {"ok": True, "block": blocks.get("ethereum"), "blocks": blocks}
 
 
+@app.get("/api/sessions/{session_id}")
+def session_turns(session_id: str) -> dict:
+    """A past conversation, replayable in the UI with ?replay=<id>. Used for screenshots and for showing a judge a saved run."""
+    agent = SESSIONS.get(session_id)
+    if agent is not None:
+        turns = [{"user": t["user"], "reply": t["reply"], "tool_calls": t["tool_calls"], "trace_id": t["trace_id"], "latency_ms": t["latency_ms"],
+                  "check": None if t.get("check") is None else {k: t["check"][k] for k in ("kind", "ok", "text") if k in t["check"]}} for t in agent.turns]
+        return {"session_id": session_id, "version": agent.version, "active_wallet": agent.active_wallet, "turns": turns}
+    # not in memory (reset or restart): rebuild the conversation from the trace log, which keeps every turn ever sent to PRISM
+    from .prism.tracer import OFFLINE_LOG
+
+    turns, version, wallet = [], None, None
+    if OFFLINE_LOG.exists():
+        for line in OFFLINE_LOG.read_text().splitlines():
+            r = json.loads(line)
+            if r.get("session_id") != session_id:
+                continue
+            version = r["metadata"].get("agent_version", version)
+            wallet = r["metadata"].get("wallet") or wallet
+            users = [m["content"] for m in r["input_messages"] if m["role"] == "user" and not m["content"].startswith("[tool result")]
+            calls, check = [], None
+            for sp in r["spans"]:
+                if sp["name"].startswith("tool:"):
+                    try:
+                        out = json.loads(sp["output_text"])
+                    except Exception:
+                        out = sp["output_text"]
+                    calls.append({"name": sp["name"][5:], "input": json.loads(sp["input_text"] or "{}"), "output": out, "error": sp.get("status") == "error"})
+                elif sp["name"].startswith("check:chain"):
+                    check = {"kind": r["metadata"].get("chain_check_kind", "value"), "ok": sp["name"].endswith("match") and not sp["name"].endswith("mismatch"), "text": sp["output_text"]}
+            turns.append({"user": users[-1] if users else "", "reply": r["output_message"], "tool_calls": calls, "trace_id": r["trace_id"], "latency_ms": r["latency_ms"], "check": check})
+    if not turns:
+        raise HTTPException(404, "unknown session")
+    return {"session_id": session_id, "version": version or session_id[:2], "active_wallet": wallet, "turns": turns, "from_log": True}
+
+
 @app.get("/api/report")
 def report() -> dict:
     out = {"table": compare()}

@@ -324,6 +324,24 @@ async function loadStatus() {
   $('status').innerHTML = 'forks: ' + (forks.join(' · ') || '<b>none</b>') + ' · model ' + (s.model ? 'ok' : '<b>missing</b>') + ' · PRISM ' + (s.prism ? 'live' : 'offline log only') + (s.voice_agent_id ? ' · voice agent on' : '') + '<br>' + (Object.keys(s.forks || {}).length > 1 ? 'Ethereum and Base forks' : 'Ethereum mainnet fork') + ', real positions, real contracts, test money';
   return s;
 }
+// ?replay=<session id>[,<session id>] shows saved conversations instead of starting new ones (screenshots, judges);
+// ?results=1 opens the results table; ?clean=1 hides the voice widget
+const params = new URLSearchParams(location.search);
+async function replay(ids) {
+  const found = [];
+  for (const id of ids) { try { found.push(await api('/api/sessions/' + id)); } catch (e) {} }
+  if (!found.length) return false;
+  mode = found.length > 1 ? 'compare' : found[0].version; layout();
+  for (const v of ['v1', 'v2']) { $('chat-' + v).innerHTML = '<div class="col">' + NAMES[v] + '</div>'; tally[v] = {ok: 0, total: 0}; renderScore(v); }
+  $('tools').innerHTML = TOOLS_HEADER;
+  for (const sess of found) {
+    const v = sess.version; sessions[v] = sess.session_id;
+    for (const t of sess.turns) { add(v, 'user', t.user); add(v, 'bot', t.reply); renderTools(v, t); showCheck(v, t.check); }
+    if (sess.active_wallet) selectWallet(sess.active_wallet);
+  }
+  $('meta').innerHTML = 'PRISM session ' + found.map(s => '<code>' + s.session_id + '</code>').join(' ') + ' <span>(replay of a saved conversation)</span>';
+  return true;
+}
 async function init() {
   layout();
   try {
@@ -331,7 +349,7 @@ async function init() {
     if (s.voice_agent_id) {
       // the ElevenLabs voice agent: talks to the user in the browser and calls this server's /api/voice tools
       const el = document.createElement('elevenlabs-convai'); el.setAttribute('agent-id', s.voice_agent_id);
-      $('voice-agent').appendChild(el);
+      if (!params.get('clean')) $('voice-agent').appendChild(el);
       const sc = document.createElement('script'); sc.src = 'https://unpkg.com/@elevenlabs/convai-widget-embed'; sc.async = true; document.body.appendChild(sc);
     }
     const ws = await api('/api/wallets');
@@ -349,6 +367,10 @@ async function init() {
       $('wallets').appendChild(row);
     }
   } catch (e) { $('status').textContent = 'status unavailable'; }
+  if (params.get('clean')) $('voice-agent').remove();
+  if (params.get('focus')) { $('wallets').style.display = 'none'; document.querySelector('.quick').style.display = 'none'; }  // more room for the conversation in screenshots
+  if (params.get('results')) toggleResults();
+  if (params.get('replay') && await replay(params.get('replay').split(','))) return;
   await newSessions();
 }
 init();
