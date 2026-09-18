@@ -8,7 +8,7 @@ An AI agent that finds money a crypto wallet is owed but has never collected, an
 
 Salvage ships in two versions on purpose. **v1** is the naive first draft any team would write. **v2** is the same agent with the fixes. PRISM (by Block Convey) records both, shows exactly where v1 goes wrong, and proves that v2 does not, on the same set of wallets.
 
-## What it does
+## What does it do
 
 You paste a wallet address. Salvage scans it on local forks of Ethereum mainnet and Base for:
 
